@@ -7,6 +7,7 @@
 
 import Testing
 import Foundation
+import AppIntents
 @testable import Marco
 
 struct MarcoTests {
@@ -114,6 +115,37 @@ struct ImportantDateNextOccurrenceTests {
 
         // 31/12 → 02/01 do ano seguinte = 2 dias.
         #expect(importantDate.daysUntilNextOccurrence(from: today, calendar: calendar) == 2)
+    }
+}
+
+struct ImportantDateEntityTests {
+    let calendar = Calendar(identifier: .gregorian)
+
+    private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    @Test func copiaIdNomeEDiasRestantesDoModelo() {
+        let today = date(2026, 7, 20)
+        let importantDate = ImportantDate(name: "Mari", date: date(1995, 7, 21), type: .birthday)
+        let expectedDays = importantDate.daysUntilNextOccurrence(from: today, calendar: calendar)
+
+        let entity = ImportantDateEntity(model: importantDate)
+
+        #expect(entity.id == importantDate.id)
+        #expect(entity.name == "Mari")
+        #expect(entity.daysUntilNextOccurrence == importantDate.daysUntilNextOccurrence())
+        #expect(expectedDays >= 0)
+    }
+
+    @Test func subtituloUsaHojeAmanhaOuFaltamDias() {
+        let hoje = ImportantDateEntity(model: ImportantDate(name: "A", date: .now, type: .birthday))
+        let amanha = ImportantDateEntity(
+            model: ImportantDate(name: "B", date: Calendar.current.date(byAdding: .day, value: 1, to: .now)!, type: .birthday)
+        )
+
+        #expect(hoje.displayRepresentation.subtitle == "Hoje")
+        #expect(amanha.displayRepresentation.subtitle == "Amanhã")
     }
 }
 

@@ -126,7 +126,7 @@ Requisitos técnicos:
   `NotificationService` com agendamento das 3 camadas por data, permissão sob demanda, reagendamento em edição e cancelamento em exclusão, integrado ao CRUD da T3.
   *Aceite:* testes do cálculo dos triggers passam; criar uma data agenda 3 requests pendentes (verificável via `pendingNotificationRequests`). *Depende de:* T3
 
-- [ ] **T5 — AppEntity + UpcomingDatesIntent**
+- [x] **T5 — AppEntity + UpcomingDatesIntent**
   Expor `ImportantDate` como `AppEntity` com `EntityQuery`; implementar `UpcomingDatesIntent` (read-only) retornando as próximas datas com dialog falável pela Siri; registrar frase no `AppShortcutsProvider`.
   *Aceite:* intent aparece no app Shortcuts e retorna as datas do banco. *Depende de:* T2 (T3 ajuda a validar)
 
@@ -162,5 +162,5 @@ Requisitos técnicos:
 
 - [ ] Tom padrão das mensagens geradas: **configurável pelo usuário ou fixo?** (decidir até a T10)
 - [ ] Limite de datas antes de precisar de paginação/busca na UI (decidir se surgir necessidade; fora do MVP por ora)
-- [ ] App Schemas: aplicável ao domínio de lembretes/tarefas? (avaliar na T5 e registrar a decisão aqui)
+- [x] **App Schemas: não aplicável.** Avaliado na T5 (api-scout, SDK iOS 26.4): o namespace `AppIntents.AssistantSchemas` só cobre os domínios `Books`, `Browser`, `Camera`, `Files`, `Journal`, `Mail`, `Photos`, `Presentation`, `Reader`, `Spreadsheet`, `System`, `VisualIntelligence`, `Whiteboard`, `WordProcessor` — nenhum schema para lembretes, tarefas, calendário ou datas. Marco segue com App Intents "clássicos" (custom), como a spec já assumia.
 - **Decisão T2 — 29/02 sem ano bissexto:** a "próxima ocorrência" de uma data em 29/02 não é normalizada para 28/02 ou 01/03; avança até o próximo ano bissexto (`ImportantDate.nextOccurrence`). Coberta por testes. Impacto a considerar na T4: notificações de aniversário 29/02 só disparam a cada 4 anos — avaliar se isso é o comportamento desejado ou se merece tratamento de UX próprio.
