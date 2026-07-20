@@ -8,14 +8,14 @@ App iOS de datas importantes (aniversários, comemorativas, memoriais) com notif
 
 - iOS 26+ (mínimo para Foundation Models e App Intents atuais)
 - SwiftUI + SwiftData + UserNotifications + AppIntents + FoundationModels
-- Testes: Swift Testing no target `MarcoTests`
+- Testes: Swift Testing no target `MarcoTests` (unitários). Testes de UI (`MarcoUITests`) estão **fora de escopo** — verificação de fluxos de UI fica a cargo do `sim-verifier`.
 - Strings de UI em pt-BR
 
 ## Build e testes
 
 ```sh
 xcodebuild -project Marco.xcodeproj -scheme Marco -destination 'platform=iOS Simulator,name=iPhone 17' build
-xcodebuild -project Marco.xcodeproj -scheme Marco -destination 'platform=iOS Simulator,name=iPhone 17' test
+xcodebuild -project Marco.xcodeproj -scheme Marco -destination 'platform=iOS Simulator,name=iPhone 17' test -only-testing:MarcoTests
 ```
 
 Se o simulador não existir, escolha um disponível via `xcrun simctl list devices available`.

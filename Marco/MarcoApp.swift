@@ -10,9 +10,8 @@ import SwiftData
 
 @main
 struct MarcoApp: App {
-    // ponytail: schema vazio até T2 adicionar os @Model; incluir os tipos aqui quando existirem.
     let modelContainer: ModelContainer = {
-        let schema = Schema([])
+        let schema = Schema([ImportantDate.self])
         let configuration = ModelConfiguration(schema: schema)
         do {
             return try ModelContainer(for: schema, configurations: [configuration])

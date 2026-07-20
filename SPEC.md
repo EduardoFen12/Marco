@@ -88,7 +88,7 @@ Requisitos técnicos:
 | Integração com o sistema | App Intents (+ App Schemas, se aplicável) |
 | IA | Foundation Models framework (on-device) |
 | Automação | Shortcuts, via os App Intents expostos |
-| Testes | Swift Testing (target `MarcoTests`) |
+| Testes | Swift Testing — unitários no target `MarcoTests` (testes de UI / `MarcoUITests` fora de escopo; fluxos de UI verificados pelo `sim-verifier`) |
 
 > Stack marcado como "a verificar": a primeira task de cada área deve confirmar disponibilidade de API no SDK instalado antes de implementar, e reportar divergências ao orquestrador.
 
@@ -102,7 +102,7 @@ Requisitos técnicos:
   - **`sim-verifier`** — para critérios que exigem observar o app rodando (T3, T4, T7, T11), exercita o simulador e coleta evidências.
 - **Execução consecutiva**: uma task por vez, na ordem da seção 6, respeitando dependências. (Paralelismo com worktrees fica como experimento futuro.)
 - Cada task delegada recebe: o caminho desta spec, o ID da task (ex: `T3`) e os critérios de aceite. O sub-agente implementa **somente** o escopo da task.
-- **Verificação por task:** o sub-agente deve compilar (`xcodebuild build`) e rodar os testes (`xcodebuild test`) antes de reportar conclusão, incluindo o log de resultado no report.
+- **Verificação por task:** o sub-agente deve compilar (`xcodebuild build`) e rodar os testes unitários do target `MarcoTests` (`xcodebuild test -only-testing:MarcoTests`) antes de reportar conclusão, incluindo o log de resultado no report. Testes de UI (`MarcoUITests`) não fazem parte do escopo — fluxos de UI são verificados pelo `sim-verifier`.
 - **Rastreamento:** os checkboxes da seção 6 são a fonte da verdade. O **orquestrador** (não o sub-agente) marca `[x]` após revisar e aceitar o resultado.
 - Descobertas que invalidem parte da spec (API inexistente, decisão de design forçada) são registradas na seção 7 ou como nota na task.
 
@@ -114,15 +114,15 @@ Requisitos técnicos:
   Ajustar deployment target para iOS 26, criar estrutura de pastas (`Models/`, `Views/`, `Services/`, `Intents/`), configurar o `ModelContainer` no `MarcoApp`.
   *Aceite:* projeto compila; container SwiftData injetado no ambiente. *Depende de:* —
 
-- [ ] **T2 — Modelo de dados**
+- [x] **T2 — Modelo de dados**
   Implementar `ImportantDate` (@Model) + enums `DateType` e `Relationship` conforme seção 2, incluindo lógica de "próxima ocorrência" e "dias restantes" como extensões testáveis.
   *Aceite:* testes unitários cobrindo próxima ocorrência (incl. virada de ano e 29/02) passam. *Depende de:* T1
 
-- [ ] **T3 — UI: lista e CRUD**
+- [x] **T3 — UI: lista e CRUD**
   Lista de datas ordenada por proximidade (mostrando "faltam N dias"), tela de criação/edição com todos os campos, swipe para excluir.
   *Aceite:* fluxo criar → listar → editar → excluir funciona no simulador; preview das views compila. *Depende de:* T2
 
-- [ ] **T4 — Notificações locais**
+- [x] **T4 — Notificações locais**
   `NotificationService` com agendamento das 3 camadas por data, permissão sob demanda, reagendamento em edição e cancelamento em exclusão, integrado ao CRUD da T3.
   *Aceite:* testes do cálculo dos triggers passam; criar uma data agenda 3 requests pendentes (verificável via `pendingNotificationRequests`). *Depende de:* T3
 
@@ -156,10 +156,11 @@ Requisitos técnicos:
 
 - [ ] **T12 — Revisão final e polish**
   Passada de integração: strings de UI consistentes (pt-BR), estados vazios, revisão dos testes, atualização desta spec com o que mudou.
-  *Aceite:* `xcodebuild test` verde; seções 2–4 da spec refletem o código real. *Depende de:* todas
+  *Aceite:* `xcodebuild test -only-testing:MarcoTests` verde; seções 2–4 da spec refletem o código real. *Depende de:* todas
 
 ## 7. Em aberto
 
 - [ ] Tom padrão das mensagens geradas: **configurável pelo usuário ou fixo?** (decidir até a T10)
 - [ ] Limite de datas antes de precisar de paginação/busca na UI (decidir se surgir necessidade; fora do MVP por ora)
 - [ ] App Schemas: aplicável ao domínio de lembretes/tarefas? (avaliar na T5 e registrar a decisão aqui)
+- **Decisão T2 — 29/02 sem ano bissexto:** a "próxima ocorrência" de uma data em 29/02 não é normalizada para 28/02 ou 01/03; avança até o próximo ano bissexto (`ImportantDate.nextOccurrence`). Coberta por testes. Impacto a considerar na T4: notificações de aniversário 29/02 só disparam a cada 4 anos — avaliar se isso é o comportamento desejado ou se merece tratamento de UX próprio.
