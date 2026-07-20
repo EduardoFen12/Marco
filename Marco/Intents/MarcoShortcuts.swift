@@ -18,5 +18,14 @@ struct MarcoShortcuts: AppShortcutsProvider {
             shortTitle: "Datas chegando",
             systemImageName: "calendar"
         )
+        AppShortcut(
+            intent: DaysUntilDateIntent(),
+            phrases: [
+                "Quanto falta para \(\.$date) no \(.applicationName)",
+                "Quantos dias faltam para \(\.$date) no \(.applicationName)",
+            ],
+            shortTitle: "Quanto falta",
+            systemImageName: "hourglass"
+        )
     }
 }

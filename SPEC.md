@@ -130,7 +130,7 @@ Requisitos técnicos:
   Expor `ImportantDate` como `AppEntity` com `EntityQuery`; implementar `UpcomingDatesIntent` (read-only) retornando as próximas datas com dialog falável pela Siri; registrar frase no `AppShortcutsProvider`.
   *Aceite:* intent aparece no app Shortcuts e retorna as datas do banco. *Depende de:* T2 (T3 ajuda a validar)
 
-- [ ] **T6 — DaysUntilDateIntent**
+- [x] **T6 — DaysUntilDateIntent**
   Query com parâmetro (`ImportantDate` como entity parameter): "Quanto falta pro aniversário da Mari?" — resolução de entidade por nome, dialog com dias restantes.
   *Aceite:* intent no Shortcuts aceita seleção de entidade e responde corretamente. *Depende de:* T5
 
