@@ -110,7 +110,7 @@ Requisitos técnicos:
 
 > Formato: cada task é atômica, tem critérios de aceite verificáveis e lista suas dependências. Executar em ordem.
 
-- [ ] **T1 — Fundação do projeto**
+- [x] **T1 — Fundação do projeto**
   Ajustar deployment target para iOS 26, criar estrutura de pastas (`Models/`, `Views/`, `Services/`, `Intents/`), configurar o `ModelContainer` no `MarcoApp`.
   *Aceite:* projeto compila; container SwiftData injetado no ambiente. *Depende de:* —
 
