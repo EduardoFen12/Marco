@@ -27,5 +27,14 @@ struct MarcoShortcuts: AppShortcutsProvider {
             shortTitle: "Quanto falta",
             systemImageName: "hourglass"
         )
+        AppShortcut(
+            intent: AddImportantDateIntent(),
+            phrases: [
+                "Adicionar data no \(.applicationName)",
+                "Nova data importante no \(.applicationName)",
+            ],
+            shortTitle: "Adicionar data",
+            systemImageName: "calendar.badge.plus"
+        )
     }
 }

@@ -134,7 +134,7 @@ Requisitos técnicos:
   Query com parâmetro (`ImportantDate` como entity parameter): "Quanto falta pro aniversário da Mari?" — resolução de entidade por nome, dialog com dias restantes.
   *Aceite:* intent no Shortcuts aceita seleção de entidade e responde corretamente. *Depende de:* T5
 
-- [ ] **T7 — AddImportantDateIntent**
+- [x] **T7 — AddImportantDateIntent**
   Intent de escrita: cria uma `ImportantDate` a partir de parâmetros (nome, data, tipo), com prompts de parâmetro faltante e agendamento das notificações (reuso do `NotificationService`).
   *Aceite:* criar via Shortcuts persiste no SwiftData e aparece na lista do app. *Depende de:* T5, T4
 
