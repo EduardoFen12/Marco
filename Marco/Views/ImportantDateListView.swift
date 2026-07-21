@@ -8,9 +8,11 @@ import SwiftData
 
 struct ImportantDateListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(NotificationNavigationCoordinator.self) private var notificationCoordinator
     @Query private var importantDates: [ImportantDate]
     @State private var isPresentingNewDate = false
     @State private var isPresentingImport = false
+    @State private var path = NavigationPath()
 
     private var sortedDates: [ImportantDate] {
         importantDates.sorted {
@@ -19,7 +21,7 @@ struct ImportantDateListView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 if sortedDates.isEmpty {
                     ContentUnavailableView {
@@ -33,13 +35,16 @@ struct ImportantDateListView: View {
                     }
                 } else {
                     ForEach(sortedDates) { importantDate in
-                        NavigationLink {
-                            ImportantDateFormView(importantDate: importantDate)
-                        } label: {
+                        NavigationLink(value: importantDate.id) {
                             ImportantDateRow(importantDate: importantDate)
                         }
                     }
                     .onDelete(perform: delete)
+                }
+            }
+            .navigationDestination(for: UUID.self) { id in
+                if let importantDate = importantDates.first(where: { $0.id == id }) {
+                    ImportantDateFormView(importantDate: importantDate)
                 }
             }
             .navigationTitle("Datas importantes")
@@ -70,6 +75,10 @@ struct ImportantDateListView: View {
                 ImportCandidatesReviewView()
             }
         }
+        .onAppear(perform: navigateToPendingImportantDateIfNeeded)
+        .onChange(of: notificationCoordinator.pendingImportantDateID) {
+            navigateToPendingImportantDateIfNeeded()
+        }
     }
 
     private func delete(at offsets: IndexSet) {
@@ -78,6 +87,15 @@ struct ImportantDateListView: View {
             NotificationService.cancel(importantDate)
             modelContext.delete(importantDate)
         }
+    }
+
+    /// Deep-link da ação "Abrir para mensagem"/toque na notificação (T22): navega até o detalhe
+    /// da `ImportantDate` sinalizada pelo `NotificationDelegate`, se ela ainda existir.
+    private func navigateToPendingImportantDateIfNeeded() {
+        guard let id = notificationCoordinator.pendingImportantDateID,
+              importantDates.contains(where: { $0.id == id }) else { return }
+        path.append(id)
+        notificationCoordinator.pendingImportantDateID = nil
     }
 }
 
@@ -151,4 +169,5 @@ extension Relationship {
 #Preview {
     ImportantDateListView()
         .modelContainer(for: ImportantDate.self, inMemory: true)
+        .environment(NotificationNavigationCoordinator())
 }

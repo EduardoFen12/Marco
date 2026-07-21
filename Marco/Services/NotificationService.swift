@@ -32,7 +32,7 @@ enum NotificationLayer: String, CaseIterable {
 
 /// Trigger calculado para uma camada de notificação: identificador determinístico +
 /// `DateComponents` para um `UNCalendarNotificationTrigger` recorrente anual.
-struct NotificationTriggerSpec: Equatable { 
+struct NotificationTriggerSpec: Equatable {
     let layer: NotificationLayer
     let identifier: String
     let dateComponents: DateComponents
@@ -42,6 +42,27 @@ struct NotificationTriggerSpec: Equatable {
 /// de uma `ImportantDate`. A lógica de cálculo dos triggers é pura e testável sem tocar
 /// `UNUserNotificationCenter`; `schedule`/`cancel` são wrappers finos sobre o center.
 enum NotificationService {
+    /// Categoria de notificação interativa (T22): ações "Adiar" e "Abrir para mensagem".
+    static let categoryIdentifier = "IMPORTANT_DATE"
+    static let snoozeActionIdentifier = "SNOOZE_ACTION"
+    static let openMessageActionIdentifier = "OPEN_MESSAGE_ACTION"
+    /// Chave em `userInfo` com o `id` da `ImportantDate`, usada pelo `NotificationDelegate` para
+    /// saber qual data reagendar/abrir.
+    static let importantDateIDKey = "importantDateID"
+
+    /// Registra a categoria com as ações de notificação interativa. `setNotificationCategories`
+    /// apenas substitui o conjunto (não duplica), então é seguro chamar a cada `schedule`.
+    static func registerCategories(center: UNUserNotificationCenter = .current()) {
+        let snooze = UNNotificationAction(identifier: snoozeActionIdentifier, title: "Adiar", options: [])
+        let openMessage = UNNotificationAction(
+            identifier: openMessageActionIdentifier, title: "Abrir para mensagem", options: [.foreground]
+        )
+        let category = UNNotificationCategory(
+            identifier: categoryIdentifier, actions: [snooze, openMessage], intentIdentifiers: [], options: []
+        )
+        center.setNotificationCategories([category])
+    }
+
     static func identifiers(for importantDate: ImportantDate) -> [String] {
         NotificationLayer.allCases.map { identifier(for: importantDate, layer: $0) }
     }
@@ -86,12 +107,15 @@ enum NotificationService {
         // request mesmo sem autorização (só a entrega fica bloqueada), então o agendamento
         // não depende do usuário ter concedido permissão.
         _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
+        registerCategories(center: center)
 
         for spec in triggerSpecs(for: importantDate) {
             let content = UNMutableNotificationContent()
             content.title = importantDate.name
             content.body = spec.layer.body
             content.sound = .default
+            content.categoryIdentifier = categoryIdentifier
+            content.userInfo = [importantDateIDKey: importantDate.id.uuidString]
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: spec.dateComponents, repeats: true)
             let request = UNNotificationRequest(identifier: spec.identifier, content: content, trigger: trigger)

@@ -300,6 +300,18 @@ struct NotificationServiceTests {
     }
 }
 
+struct NotificationDelegateSnoozeTests {
+    // T22: cálculo puro do novo horário de disparo da ação "Adiar".
+    @Test func snoozeFireDateAdiciona3Horas() {
+        let now = Date()
+
+        let fireDate = NotificationDelegate.snoozeFireDate(from: now)
+
+        #expect(fireDate.timeIntervalSince(now) == NotificationDelegate.snoozeInterval)
+        #expect(NotificationDelegate.snoozeInterval == 3 * 60 * 60)
+    }
+}
+
 struct AISuggestionServicePromptTests {
     // Testes determinísticos sobre a construção do prompt — não dependem do modelo rodar de fato.
 

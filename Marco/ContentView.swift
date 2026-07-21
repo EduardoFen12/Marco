@@ -17,4 +17,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .modelContainer(for: ImportantDate.self, inMemory: true)
+        .environment(NotificationNavigationCoordinator())
 }

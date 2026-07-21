@@ -233,7 +233,7 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
   Target watchOS: lista das próximas datas + complication de contagem regressiva na carátula, lendo o store compartilhado.
   *Aceite:* app do watch lista as datas; complication mostra a próxima. *Depende de:* T19
 
-- [ ] **T22 — Notificações interativas**
+- [x] **T22 — Notificações interativas**
   `UNNotificationCategory` com ações "Adiar" (reagenda a curto prazo) e "Abrir para mensagem" (deep-link abre o detalhe da data p/ gerar mensagem via `AISuggestionService`). Delegate trata as ações.
   *Aceite:* notificação exibe as ações; "Adiar" reagenda; abrir leva ao detalhe. *Depende de:* T4, T10
 
