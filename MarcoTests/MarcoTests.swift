@@ -430,3 +430,54 @@ struct ImportantDateFormViewBirthdayAndTimeTests {
         #expect(calendar.component(.minute, from: result) == 15)
     }
 }
+
+struct ContactsImportServiceCandidateTests {
+    // T16: lógica pura de mapeamento DateComponents (CNContact.birthday) → ImportCandidate.
+    // Não dá pra mockar CNContactStore em unit test, então testamos só a transformação de dados.
+    let calendar = Calendar(identifier: .gregorian)
+
+    @Test func candidateComAnoPreenchePorMesDiaEBirthYear() {
+        let birthday = DateComponents(year: 1990, month: 5, day: 31)
+
+        let result = ContactsImportService.candidate(name: "Mari", birthday: birthday, calendar: calendar)
+
+        #expect(result?.name == "Mari")
+        #expect(result?.type == .birthday)
+        #expect(result?.source == .contacts)
+        #expect(result?.birthYear == 1990)
+        #expect(calendar.component(.year, from: result!.date) == 2000)
+        #expect(calendar.component(.month, from: result!.date) == 5)
+        #expect(calendar.component(.day, from: result!.date) == 31)
+    }
+
+    @Test func candidateSemAnoDeixaBirthYearNil() {
+        let birthday = DateComponents(month: 3, day: 10)
+
+        let result = ContactsImportService.candidate(name: "Ana", birthday: birthday, calendar: calendar)
+
+        #expect(result?.birthYear == nil)
+        #expect(calendar.component(.month, from: result!.date) == 3)
+        #expect(calendar.component(.day, from: result!.date) == 10)
+    }
+
+    @Test func candidateSuporta29DeFevereiroContraAnoFixo2000() {
+        let birthday = DateComponents(month: 2, day: 29)
+
+        let result = ContactsImportService.candidate(name: "Léo", birthday: birthday, calendar: calendar)
+
+        #expect(calendar.component(.year, from: result!.date) == 2000)
+        #expect(calendar.component(.month, from: result!.date) == 2)
+        #expect(calendar.component(.day, from: result!.date) == 29)
+    }
+
+    @Test func candidateRetornaNilSemMesOuDia() {
+        #expect(ContactsImportService.candidate(name: "Sem Mês", birthday: DateComponents(day: 10), calendar: calendar) == nil)
+        #expect(ContactsImportService.candidate(name: "Sem Dia", birthday: DateComponents(month: 5), calendar: calendar) == nil)
+    }
+
+    @Test func candidateRetornaNilComNomeVazio() {
+        let birthday = DateComponents(month: 1, day: 1)
+
+        #expect(ContactsImportService.candidate(name: "   ", birthday: birthday, calendar: calendar) == nil)
+    }
+}

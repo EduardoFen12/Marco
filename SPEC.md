@@ -209,7 +209,7 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
   Mostrar "faz N anos" na lista e/ou detalhe quando houver `birthYear`.
   *Aceite:* item com ano mostra idade correta na próxima ocorrência; sem ano, nada é exibido. *Depende de:* T13, T3
 
-- [ ] **T16 — ContactsImportService (aniversários dos Contatos)**
+- [x] **T16 — ContactsImportService (aniversários dos Contatos)**
   Framework `Contacts`: permissão sob demanda, buscar contatos com aniversário, produzir candidatos `type = .birthday` (com `birthYear` quando o contato tiver ano).
   *Aceite:* serviço retorna candidatos a partir dos contatos; sem permissão degrada sem crash. *Depende de:* T13
 
