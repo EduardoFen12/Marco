@@ -400,6 +400,7 @@
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "O Marco usa seu Calendário para sugerir datas a importar.";
 				INFOPLIST_KEY_NSContactsUsageDescription = "O Marco usa seus contatos para sugerir aniversários a importar.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -433,6 +434,7 @@
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "O Marco usa seu Calendário para sugerir datas a importar.";
 				INFOPLIST_KEY_NSContactsUsageDescription = "O Marco usa seus contatos para sugerir aniversários a importar.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

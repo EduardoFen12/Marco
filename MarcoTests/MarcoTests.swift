@@ -481,3 +481,47 @@ struct ContactsImportServiceCandidateTests {
         #expect(ContactsImportService.candidate(name: "   ", birthday: birthday, calendar: calendar) == nil)
     }
 }
+
+struct EventKitImportServiceCandidateTests {
+    // T17: lógica pura de mapeamento (título/data/isBirthday) → ImportCandidate.
+    // Não dá pra mockar EKEvent/EKCalendar em unit test, então testamos só a transformação de dados.
+    let calendar = Calendar(identifier: .gregorian)
+
+    private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    @Test func eventoDeAniversarioViraTypeBirthday() {
+        let result = EventKitImportService.candidate(name: "Mari", date: date(2026, 5, 31), isBirthday: true)
+
+        #expect(result?.name == "Mari")
+        #expect(result?.type == .birthday)
+        #expect(result.map { calendar.component(.year, from: $0.date) } == 2000)
+        #expect(result?.source == .calendar)
+        #expect(result?.birthYear == nil)
+    }
+
+    @Test func eventoComumViraTypeCommemorative() {
+        let result = EventKitImportService.candidate(name: "Reunião de família", date: date(2026, 8, 1), isBirthday: false)
+
+        #expect(result?.type == .commemorative)
+        #expect(result?.birthYear == nil)
+    }
+
+    @Test func birthYearSempreNil() {
+        let comAniversario = EventKitImportService.candidate(name: "Léo", date: date(2026, 2, 28), isBirthday: true)
+        let semAniversario = EventKitImportService.candidate(name: "Confraternização", date: date(2026, 12, 20), isBirthday: false)
+
+        #expect(comAniversario?.birthYear == nil)
+        #expect(semAniversario?.birthYear == nil)
+    }
+
+    @Test func candidateRetornaNilSemData() {
+        #expect(EventKitImportService.candidate(name: "Sem Data", date: nil, isBirthday: false) == nil)
+    }
+
+    @Test func candidateRetornaNilComNomeVazioOuNil() {
+        #expect(EventKitImportService.candidate(name: "   ", date: date(2026, 1, 1), isBirthday: false) == nil)
+        #expect(EventKitImportService.candidate(name: nil, date: date(2026, 1, 1), isBirthday: false) == nil)
+    }
+}
