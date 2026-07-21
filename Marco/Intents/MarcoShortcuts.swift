@@ -36,5 +36,14 @@ struct MarcoShortcuts: AppShortcutsProvider {
             shortTitle: "Adicionar data",
             systemImageName: "calendar.badge.plus"
         )
+        AppShortcut(
+            intent: BirthdaysThisMonthIntent(),
+            phrases: [
+                "Quem faz aniversário esse mês no \(.applicationName)",
+                "Aniversários do mês no \(.applicationName)",
+            ],
+            shortTitle: "Aniversários do mês",
+            systemImageName: "gift"
+        )
     }
 }

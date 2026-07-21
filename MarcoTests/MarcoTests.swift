@@ -10,16 +10,6 @@ import Foundation
 import AppIntents
 @testable import Marco
 
-struct MarcoTests {
-
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-        // Swift Testing Documentation
-        // https://developer.apple.com/documentation/testing
-    }
-
-}
-
 struct ImportantDateNextOccurrenceTests {
     let calendar = Calendar(identifier: .gregorian)
 
@@ -235,5 +225,71 @@ struct NotificationServiceTests {
         let specIds = Set(NotificationService.triggerSpecs(for: importantDate).map(\.identifier))
 
         #expect(ids == specIds)
+    }
+}
+
+struct AISuggestionServicePromptTests {
+    // Testes determinísticos sobre a construção do prompt — não dependem do modelo rodar de fato.
+
+    @Test func mensagemParaMemorialUsaTomReflexivo() {
+        let prompt = AISuggestionService.messagePrompt(
+            name: "Vovô", type: .memorial, relationship: .family, notes: nil
+        )
+
+        #expect(prompt.contains("reflexivo"))
+        #expect(!prompt.contains("tom carinhoso"))
+        #expect(!prompt.contains("tom engraçado"))
+    }
+
+    @Test func mensagemParaAniversarioNaoUsaTomReflexivo() {
+        let prompt = AISuggestionService.messagePrompt(
+            name: "Mari", type: .birthday, relationship: .partner, notes: nil
+        )
+
+        #expect(!prompt.contains("reflexivo"))
+        #expect(prompt.contains("aniversário"))
+    }
+
+    @Test func instrucaoDeMensagemDifereEntreMemorialETiposNormais() {
+        let memorial = AISuggestionService.messagePrompt(name: "X", type: .memorial, relationship: .friend, notes: nil)
+        let birthday = AISuggestionService.messagePrompt(name: "X", type: .birthday, relationship: .friend, notes: nil)
+        let commemorative = AISuggestionService.messagePrompt(name: "X", type: .commemorative, relationship: .friend, notes: nil)
+
+        #expect(memorial != birthday)
+        #expect(memorial != commemorative)
+    }
+
+    @Test func tomVariaConformeRelacionamento() {
+        let parceiro = AISuggestionService.messagePrompt(name: "X", type: .birthday, relationship: .partner, notes: nil)
+        let amigo = AISuggestionService.messagePrompt(name: "X", type: .birthday, relationship: .friend, notes: nil)
+        let colega = AISuggestionService.messagePrompt(name: "X", type: .birthday, relationship: .colleague, notes: nil)
+
+        #expect(parceiro.contains("carinhoso"))
+        #expect(amigo.contains("engraçado"))
+        #expect(colega.contains("formal"))
+    }
+
+    @Test func promptDePresenteIncluiNotesERelacionamento() {
+        let prompt = AISuggestionService.giftPrompt(notes: "gosta de café e livros", relationship: .friend)
+
+        #expect(prompt.contains("gosta de café e livros"))
+        #expect(prompt.contains("amigo"))
+    }
+}
+
+struct ImportantDateFormViewGiftVisibilityTests {
+    // Regra combinada da T11: botão "Sugerir presente" exige modelo disponível E notes preenchidas.
+
+    @Test func escondeQuandoModeloIndisponivelMesmoComNotes() {
+        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "gosta de café", isModelAvailable: false))
+    }
+
+    @Test func escondeQuandoNotesVaziaMesmoComModeloDisponivel() {
+        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "   ", isModelAvailable: true))
+        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "", isModelAvailable: true))
+    }
+
+    @Test func mostraQuandoModeloDisponivelENotesPreenchida() {
+        #expect(ImportantDateFormView.showsGiftSuggestion(notes: "gosta de plantas", isModelAvailable: true))
     }
 }

@@ -67,16 +67,17 @@ Notas de design:
 
 ### 3.4 Foundation Models (IA on-device)
 
-Duas funções geradas a partir da **mesma `LanguageModelSession`**, variando a instrução conforme o `type` da data:
+`AISuggestionService` (`@MainActor`) mantém **uma única `LanguageModelSession`** (criada via `lazy var` a partir de um `SystemLanguageModel` injetável, padrão `.default`) reaproveitada entre chamadas; a instrução varia por `type`/`relationship` no *prompt* de cada operação (mesma sessão, prompt diferente), não em sessões separadas:
 
-- **Sugestão de presente** — usa `notes` + `relationship` como contexto. **Só é oferecida se `notes` estiver preenchido** (senão a sugestão fica genérica demais para ser útil).
-- **Mensagem personalizada** — texto curto conforme `relationship` (tom carinhoso/engraçado/formal) e `type`. Para `type == .memorial`, a mesma função troca a instrução para **tom reflexivo** em vez de sugestão de presente — mesma arquitetura, instrução diferente.
+- **`suggestGift(notes:relationship:) async -> Result<GiftSuggestion, AISuggestionError>`** — usa `notes` + `relationship` como contexto. **Só é oferecida se `notes` estiver preenchido** (a UI só mostra o botão nessa condição, via `ImportantDateFormView.showsGiftSuggestion(notes:isModelAvailable:)` — o serviço em si não valida isso). Saída estruturada via `@Generable` (`GiftSuggestion`: `title` + `rationale`).
+- **`personalizedMessage(name:type:relationship:notes:) async -> Result<String, AISuggestionError>`** — texto curto conforme `relationship` (tom carinhoso/engraçado/formal, ver `tone(for:)`) e `type`. Para `type == .memorial`, o mesmo prompt troca para **tom reflexivo** em vez de sugestão de presente — mesma arquitetura, instrução diferente.
+- Construção de prompt isolada em funções `nonisolated static` (`giftPrompt`, `messagePrompt`) — puras, sem tocar a sessão, testáveis diretamente sem `@MainActor` nem modelo real.
 
 Requisitos técnicos:
 
 - `import FoundationModels`, sessão on-device.
-- Verificar disponibilidade do modelo (`SystemLanguageModel.default.availability`) e degradar graciosamente (esconder/desabilitar os botões de IA com explicação) quando indisponível.
-- Saída estruturada via `@Generable` quando fizer sentido (ex: sugestão de presente com título + justificativa).
+- Ambas as operações retornam `Result<T, AISuggestionError>` — **não `throws`**. Indisponibilidade do modelo (`SystemLanguageModel.default.availability`, exposta via `AISuggestionService.availability`/`isAvailable`) e falhas de geração (`LanguageModelSession.GenerationError`, mapeado caso a caso em `domainError(from:)`) são convertidas em `AISuggestionError` (enum com `.unavailable(reason)` e `.generationFailed(String)`) com mensagens em pt-BR (`errorDescription`), para a UI degradar graciosamente (esconder/desabilitar os botões de IA com explicação) sem `try/catch` espalhado pelas views.
+- Saída estruturada via `@Generable` na sugestão de presente; a mensagem personalizada retorna `String` livre.
 
 ## 4. Stack técnico
 
@@ -85,12 +86,12 @@ Requisitos técnicos:
 | UI | SwiftUI |
 | Persistência | SwiftData |
 | Notificações | UserNotifications |
-| Integração com o sistema | App Intents (+ App Schemas, se aplicável) |
+| Integração com o sistema | App Intents "clássicos" (App Schemas avaliados e descartados — sem fit para o domínio, ver seção 7) |
 | IA | Foundation Models framework (on-device) |
 | Automação | Shortcuts, via os App Intents expostos |
 | Testes | Swift Testing — unitários no target `MarcoTests` (testes de UI / `MarcoUITests` fora de escopo; fluxos de UI verificados pelo `sim-verifier`) |
 
-> Stack marcado como "a verificar": a primeira task de cada área deve confirmar disponibilidade de API no SDK instalado antes de implementar, e reportar divergências ao orquestrador.
+> Stack confirmada no SDK instalado (iOS 26.4): cada camada foi validada pelo sub-agente `api-scout` antes da implementação (T4 — notificações; T5–T8 — App Intents; T10 — Foundation Models). Divergências e decisões encontradas nesse processo estão registradas na seção 7.
 
 ## 5. Processo de implementação (orquestração SDD)
 
@@ -138,29 +139,31 @@ Requisitos técnicos:
   Intent de escrita: cria uma `ImportantDate` a partir de parâmetros (nome, data, tipo), com prompts de parâmetro faltante e agendamento das notificações (reuso do `NotificationService`).
   *Aceite:* criar via Shortcuts persiste no SwiftData e aparece na lista do app. *Depende de:* T5, T4
 
-- [ ] **T8 — BirthdaysThisMonthIntent (bônus)**
+- [x] **T8 — BirthdaysThisMonthIntent (bônus)**
   Query por período: aniversários do mês corrente.
   *Aceite:* intent retorna somente `type == .birthday` do mês atual. *Depende de:* T5
 
-- [ ] **T9 — Shortcut "Resumo da manhã"**
+- [x] **T9 — Shortcut "Resumo da manhã"**
   Garantir que `UpcomingDatesIntent` retorna valor encadeável no Shortcuts; escrever `docs/shortcuts-resumo-da-manha.md` com o passo-a-passo da automation (trigger diário de manhã → intent → mostrar/falar resumo).
   *Aceite:* automation montada seguindo o doc funciona no aparelho/simulador. *Depende de:* T5
 
-- [ ] **T10 — Foundation Models: serviço de IA**
+- [x] **T10 — Foundation Models: serviço de IA**
   `AISuggestionService` com uma `LanguageModelSession`; checagem de disponibilidade; duas operações: sugestão de presente (requer `notes`) e mensagem personalizada (tom por `relationship`/`type`, reflexivo para `.memorial`), com saída estruturada via `@Generable` onde couber.
   *Aceite:* compila no SDK iOS 26; indisponibilidade tratada sem crash; instruções distintas por tipo verificáveis em teste/preview. *Depende de:* T2
 
-- [ ] **T11 — UI das sugestões de IA**
+- [x] **T11 — UI das sugestões de IA**
   Na tela de detalhe da data: botão "Sugerir presente" (visível só com `notes` preenchido) e "Gerar mensagem", com estado de loading, exibição do resultado e copiar para clipboard. Esconder recursos quando o modelo estiver indisponível.
   *Aceite:* fluxo completo no simulador com modelo disponível; UI degrada corretamente sem modelo. *Depende de:* T3, T10
 
-- [ ] **T12 — Revisão final e polish**
+- [x] **T12 — Revisão final e polish**
   Passada de integração: strings de UI consistentes (pt-BR), estados vazios, revisão dos testes, atualização desta spec com o que mudou.
   *Aceite:* `xcodebuild test -only-testing:MarcoTests` verde; seções 2–4 da spec refletem o código real. *Depende de:* todas
 
 ## 7. Em aberto
 
-- [ ] Tom padrão das mensagens geradas: **configurável pelo usuário ou fixo?** (decidir até a T10)
+- [x] **Tom padrão das mensagens geradas: fixo por `relationship`.** Decidido na T10 (`AISuggestionService.tone(for:)`): `.partner`/`.family` → carinhoso, `.friend` → engraçado, `.colleague`/`.other`/nil → formal. `type == .memorial` sempre sobrepõe para tom reflexivo, independente do `relationship`. Não configurável pelo usuário no MVP.
 - [ ] Limite de datas antes de precisar de paginação/busca na UI (decidir se surgir necessidade; fora do MVP por ora)
 - [x] **App Schemas: não aplicável.** Avaliado na T5 (api-scout, SDK iOS 26.4): o namespace `AppIntents.AssistantSchemas` só cobre os domínios `Books`, `Browser`, `Camera`, `Files`, `Journal`, `Mail`, `Photos`, `Presentation`, `Reader`, `Spreadsheet`, `System`, `VisualIntelligence`, `Whiteboard`, `WordProcessor` — nenhum schema para lembretes, tarefas, calendário ou datas. Marco segue com App Intents "clássicos" (custom), como a spec já assumia.
+- **Limitação de ambiente — geração real do Foundation Models não verificável neste Mac (T11):** `sim-verifier` confirmou `SystemLanguageModel.default.availability == .available` no host de desenvolvimento, mas toda chamada de `respond` falha em runtime por um erro de infraestrutura do próprio framework (guardrail/safety checker: `DecodingError.keyNotFound("thoughtContents")`, provável mismatch entre assets do modelo e o simulador iOS 26.4 usados neste host) — não é um bug do código do Marco. A UI da T11 trata esse erro graciosamente (mensagem em pt-BR, sem crash), mas nem o caminho de sucesso (resultado + copiar) nem o caminho de indisponibilidade genuína (`.unavailable`) puderam ser exercitados neste ambiente. Repetir manualmente em um Mac com Apple Intelligence/assets íntegros antes de considerar a funcionalidade de IA validada ponta a ponta.
+
 - **Decisão T2 — 29/02 sem ano bissexto:** a "próxima ocorrência" de uma data em 29/02 não é normalizada para 28/02 ou 01/03; avança até o próximo ano bissexto (`ImportantDate.nextOccurrence`). Coberta por testes. Impacto a considerar na T4: notificações de aniversário 29/02 só disparam a cada 4 anos — avaliar se isso é o comportamento desejado ou se merece tratamento de UX próprio.
