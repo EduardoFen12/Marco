@@ -205,7 +205,7 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
   Em `ImportantDateFormView`: `DatePicker(.hourAndMinute)` para a hora do lembrete; quando `type == .birthday`, trocar o `DatePicker(.date)` por seletor **só dia/mês** + campo opcional "Ano de nascimento". Tipos não-aniversário mantêm data completa. Atualizar `save()`.
   *Aceite:* criar aniversário sem ano persiste dia/mês correto (incl. 29/02); a hora escolhida reflete nos pending requests. *Depende de:* T13, T3
 
-- [ ] **T15 — Idade nos aniversários**
+- [x] **T15 — Idade nos aniversários**
   Mostrar "faz N anos" na lista e/ou detalhe quando houver `birthYear`.
   *Aceite:* item com ano mostra idade correta na próxima ocorrência; sem ano, nada é exibido. *Depende de:* T13, T3
 

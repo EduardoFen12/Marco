@@ -95,6 +95,10 @@ struct ImportantDateFormView: View {
     var body: some View {
         Form {
             Section("Informações") {
+                if let ageLabel = ImportantDate.ageLabel(forAge: importantDate?.age()) {
+                    Text(ageLabel)
+                        .foregroundStyle(.secondary)
+                }
                 TextField("Nome", text: $name)
                 if type == .birthday {
                     HStack {

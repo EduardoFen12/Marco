@@ -75,6 +75,11 @@ private struct ImportantDateRow: View {
                 Text(importantDate.type.displayName)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                if let ageLabel = ImportantDate.ageLabel(forAge: importantDate.age()) {
+                    Text(ageLabel)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             Spacer()
             Text(importantDate.daysRemainingLabel)
@@ -94,6 +99,13 @@ extension ImportantDate {
         case 1: return "Amanhã"
         case let days: return "Faltam \(days) dias"
         }
+    }
+
+    /// Texto "faz N anos" a partir de uma idade já calculada (ver `age(on:calendar:)`);
+    /// `nil` quando não há idade (sem `birthYear`), caso em que nada deve ser exibido.
+    static func ageLabel(forAge age: Int?) -> String? {
+        guard let age else { return nil }
+        return "Faz \(age) anos"
     }
 }
 

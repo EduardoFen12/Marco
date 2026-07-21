@@ -154,6 +154,16 @@ struct ImportantDateNextOccurrenceTests {
     }
 }
 
+struct ImportantDateAgeLabelTests {
+    @Test func ageLabelComIdade() {
+        #expect(ImportantDate.ageLabel(forAge: 30) == "Faz 30 anos")
+    }
+
+    @Test func ageLabelSemIdade() {
+        #expect(ImportantDate.ageLabel(forAge: nil) == nil)
+    }
+}
+
 struct ImportantDateEntityTests {
     let calendar = Calendar(identifier: .gregorian)
 
