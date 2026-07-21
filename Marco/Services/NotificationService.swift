@@ -5,6 +5,7 @@
 
 import Foundation
 import UserNotifications
+import WidgetKit
 
 /// As 3 camadas de lembrete de uma `ImportantDate`.
 enum NotificationLayer: String, CaseIterable {
@@ -123,8 +124,11 @@ enum NotificationService {
         }
     }
 
-    /// Cancela as 3 notificações pendentes de uma `ImportantDate` (chamado na exclusão).
+    /// Cancela as 3 notificações pendentes de uma `ImportantDate` (chamado na criação/edição, via
+    /// `schedule`, e na exclusão). Ponto único por onde todo CRUD passa, por isso também é aqui
+    /// que avisamos o widget (T20) para recarregar sua timeline.
     static func cancel(_ importantDate: ImportantDate, center: UNUserNotificationCenter = .current()) {
         center.removePendingNotificationRequests(withIdentifiers: identifiers(for: importantDate))
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }

@@ -6,7 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		17052294EC251342FB485044 /* MarcoWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C30284134B0FDAAF6B5EED98 /* MarcoWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F7F5340095B635640E7C1727 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDC161A3A9EBCC8E78FAD893 /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		28045B76CCC7C2191C76C537 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A045986A3009743E00EFFE38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1C29563ECBE6C8E8F0733308;
+			remoteInfo = MarcoWidgets;
+		};
 		A04598803009744000EFFE38 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A045986A3009743E00EFFE38 /* Project object */;
@@ -23,11 +35,37 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		513A498E76D1F48ECD19038C /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				17052294EC251342FB485044 /* MarcoWidgets.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		A04598723009743E00EFFE38 /* Marco.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marco.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A045987F3009744000EFFE38 /* MarcoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarcoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A04598893009744000EFFE38 /* MarcoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarcoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C30284134B0FDAAF6B5EED98 /* MarcoWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MarcoWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		FDC161A3A9EBCC8E78FAD893 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		928DEE2F0BE9FDDFBABC5C2F /* Exceptions for "MarcoWidgets" folder in "MarcoWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1C29563ECBE6C8E8F0733308 /* MarcoWidgets */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A04598743009743E00EFFE38 /* Marco */ = {
@@ -43,6 +81,19 @@
 		A045988C3009744000EFFE38 /* MarcoUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MarcoUITests;
+			sourceTree = "<group>";
+		};
+		BD3BEBCB1C4B8CCD66FFEE97 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		FD3DE665EA1C386053AA8933 /* MarcoWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				928DEE2F0BE9FDDFBABC5C2F /* Exceptions for "MarcoWidgets" folder in "MarcoWidgets" target */,
+			);
+			path = MarcoWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,6 +120,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C6D40F2C2DE0B93629962E3F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F7F5340095B635640E7C1727 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -78,7 +137,10 @@
 				A04598743009743E00EFFE38 /* Marco */,
 				A04598823009744000EFFE38 /* MarcoTests */,
 				A045988C3009744000EFFE38 /* MarcoUITests */,
+				BD3BEBCB1C4B8CCD66FFEE97 /* Shared */,
+				FD3DE665EA1C386053AA8933 /* MarcoWidgets */,
 				A04598733009743E00EFFE38 /* Products */,
+				A6E2D098C741BED3049ABCE4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -88,13 +150,51 @@
 				A04598723009743E00EFFE38 /* Marco.app */,
 				A045987F3009744000EFFE38 /* MarcoTests.xctest */,
 				A04598893009744000EFFE38 /* MarcoUITests.xctest */,
+				C30284134B0FDAAF6B5EED98 /* MarcoWidgets.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A6E2D098C741BED3049ABCE4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AC2A6FC41606FFFA19F7E96E /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AC2A6FC41606FFFA19F7E96E /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				FDC161A3A9EBCC8E78FAD893 /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		1C29563ECBE6C8E8F0733308 /* MarcoWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 837C5A4A623D2ACFCA635640 /* Build configuration list for PBXNativeTarget "MarcoWidgets" */;
+			buildPhases = (
+				D13F16B2ED0FC1DD73E08327 /* Sources */,
+				C6D40F2C2DE0B93629962E3F /* Frameworks */,
+				85A2720B9358583C3D24FE55 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BD3BEBCB1C4B8CCD66FFEE97 /* Shared */,
+				FD3DE665EA1C386053AA8933 /* MarcoWidgets */,
+			);
+			name = MarcoWidgets;
+			productName = MarcoWidgets;
+			productReference = C30284134B0FDAAF6B5EED98 /* MarcoWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		A04598713009743E00EFFE38 /* Marco */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A04598933009744000EFFE38 /* Build configuration list for PBXNativeTarget "Marco" */;
@@ -102,17 +202,18 @@
 				A045986E3009743E00EFFE38 /* Sources */,
 				A045986F3009743E00EFFE38 /* Frameworks */,
 				A04598703009743E00EFFE38 /* Resources */,
+				513A498E76D1F48ECD19038C /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8B73F242AFB181C1EE509BDF /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A04598743009743E00EFFE38 /* Marco */,
+				BD3BEBCB1C4B8CCD66FFEE97 /* Shared */,
 			);
 			name = Marco;
-			packageProductDependencies = (
-			);
 			productName = Marco;
 			productReference = A04598723009743E00EFFE38 /* Marco.app */;
 			productType = "com.apple.product-type.application";
@@ -134,8 +235,6 @@
 				A04598823009744000EFFE38 /* MarcoTests */,
 			);
 			name = MarcoTests;
-			packageProductDependencies = (
-			);
 			productName = MarcoTests;
 			productReference = A045987F3009744000EFFE38 /* MarcoTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -157,8 +256,6 @@
 				A045988C3009744000EFFE38 /* MarcoUITests */,
 			);
 			name = MarcoUITests;
-			packageProductDependencies = (
-			);
 			productName = MarcoUITests;
 			productReference = A04598893009744000EFFE38 /* MarcoUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -173,6 +270,9 @@
 				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
+					1C29563ECBE6C8E8F0733308 = {
+						CreatedOnToolsVersion = 26.4;
+					};
 					A04598713009743E00EFFE38 = {
 						CreatedOnToolsVersion = 26.4;
 					};
@@ -203,11 +303,19 @@
 				A04598713009743E00EFFE38 /* Marco */,
 				A045987E3009744000EFFE38 /* MarcoTests */,
 				A04598883009744000EFFE38 /* MarcoUITests */,
+				1C29563ECBE6C8E8F0733308 /* MarcoWidgets */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		85A2720B9358583C3D24FE55 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A04598703009743E00EFFE38 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -253,9 +361,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D13F16B2ED0FC1DD73E08327 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		8B73F242AFB181C1EE509BDF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MarcoWidgets;
+			target = 1C29563ECBE6C8E8F0733308 /* MarcoWidgets */;
+			targetProxy = 28045B76CCC7C2191C76C537 /* PBXContainerItemProxy */;
+		};
 		A04598813009744000EFFE38 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A04598713009743E00EFFE38 /* Marco */;
@@ -269,6 +390,69 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		2FE495C9B4ECB7437F2F5851 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = MarcoWidgets/MarcoWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J63SH8A52R;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MarcoWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MarcoWidgets;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.Marco.MarcoWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		59EB71CCDF03FA3E1D931B0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = MarcoWidgets/MarcoWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J63SH8A52R;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MarcoWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MarcoWidgets;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.Marco.MarcoWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		A04598913009744000EFFE38 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -547,6 +731,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		837C5A4A623D2ACFCA635640 /* Build configuration list for PBXNativeTarget "MarcoWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FE495C9B4ECB7437F2F5851 /* Release */,
+				59EB71CCDF03FA3E1D931B0F /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A045986D3009743E00EFFE38 /* Build configuration list for PBXProject "Marco" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
