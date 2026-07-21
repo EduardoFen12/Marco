@@ -106,6 +106,52 @@ struct ImportantDateNextOccurrenceTests {
         // 31/12 → 02/01 do ano seguinte = 2 dias.
         #expect(importantDate.daysUntilNextOccurrence(from: today, calendar: calendar) == 2)
     }
+
+    @Test func idadeNilQuandoSemAnoDeNascimento() {
+        let importantDate = ImportantDate(name: "Mari", date: date(1990, 5, 31), type: .birthday)
+        let today = date(2026, 7, 20)
+
+        #expect(importantDate.age(on: today, calendar: calendar) == nil)
+    }
+
+    @Test func idadeQuandoAniversarioAindaNaoChegouEsteAno() {
+        // Aniversário em 25/12, hoje 20/07/2026 → próxima ocorrência ainda é 2026 → 36 anos.
+        let importantDate = ImportantDate(
+            name: "Ana", date: date(2000, 12, 25), type: .birthday, birthYear: 1990
+        )
+        let today = date(2026, 7, 20)
+
+        #expect(importantDate.age(on: today, calendar: calendar) == 36)
+    }
+
+    @Test func idadeQuandoAniversarioJaPassouEsteAno() {
+        // Aniversário em 31/05, hoje 20/07/2026 → já passou este ano, próxima ocorrência é 2027 → 37 anos.
+        let importantDate = ImportantDate(
+            name: "Mari", date: date(2000, 5, 31), type: .birthday, birthYear: 1990
+        )
+        let today = date(2026, 7, 20)
+
+        #expect(importantDate.age(on: today, calendar: calendar) == 37)
+    }
+
+    @Test func idadeNoDiaDoAniversarioContaComoIdadeQueCompletaHoje() {
+        let importantDate = ImportantDate(
+            name: "Hoje", date: date(2000, 7, 20), type: .birthday, birthYear: 1995
+        )
+        let today = date(2026, 7, 20)
+
+        #expect(importantDate.age(on: today, calendar: calendar) == 31)
+    }
+
+    @Test func idadeAtravessaViradaDeAno() {
+        // Aniversário em 02/01, hoje 20/12/2026 → próxima ocorrência é 02/01/2027 → 32 anos.
+        let importantDate = ImportantDate(
+            name: "Ano Novo", date: date(2000, 1, 2), type: .birthday, birthYear: 1995
+        )
+        let today = date(2026, 12, 20)
+
+        #expect(importantDate.age(on: today, calendar: calendar) == 32)
+    }
 }
 
 struct ImportantDateEntityTests {
@@ -170,8 +216,24 @@ struct NotificationServiceTests {
 
         #expect(onDay.dateComponents.month == 5)
         #expect(onDay.dateComponents.day == 31)
-        #expect(onDay.dateComponents.hour == NotificationService.defaultHour)
-        #expect(onDay.dateComponents.minute == NotificationService.defaultMinute)
+        #expect(onDay.dateComponents.hour == importantDate.notificationHour)
+        #expect(onDay.dateComponents.minute == importantDate.notificationMinute)
+    }
+
+    @Test func usaHoraCustomDaImportantDateNasTresCamadas() {
+        let importantDate = ImportantDate(
+            name: "Mari", date: date(1990, 5, 31), type: .birthday,
+            notificationHour: 18, notificationMinute: 30
+        )
+        let today = date(2026, 1, 1)
+
+        let specs = NotificationService.triggerSpecs(for: importantDate, from: today, calendar: calendar)
+
+        #expect(specs.count == 3)
+        for spec in specs {
+            #expect(spec.dateComponents.hour == 18)
+            #expect(spec.dateComponents.minute == 30)
+        }
     }
 
     @Test func camadasDeAvisoSaoDeslocadasParaTras() {
@@ -291,5 +353,70 @@ struct ImportantDateFormViewGiftVisibilityTests {
 
     @Test func mostraQuandoModeloDisponivelENotesPreenchida() {
         #expect(ImportantDateFormView.showsGiftSuggestion(notes: "gosta de plantas", isModelAvailable: true))
+    }
+}
+
+struct ImportantDateFormViewBirthdayAndTimeTests {
+    // T14: composição de aniversário sem ano (dia/mês contra o ano fixo 2000, incl. 29/02)
+    // e extração/composição de hora/minuto do lembrete — lógica pura, fora do @MainActor.
+    let calendar = Calendar(identifier: .gregorian)
+
+    private func date(_ year: Int, _ month: Int, _ day: Int, hour: Int = 0, minute: Int = 0) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute))!
+    }
+
+    @Test func birthdayDateComponeMesEDiaContraAnoFixo2000() {
+        let result = ImportantDateFormView.birthdayDate(month: 5, day: 31, calendar: calendar)
+
+        #expect(calendar.component(.year, from: result) == 2000)
+        #expect(calendar.component(.month, from: result) == 5)
+        #expect(calendar.component(.day, from: result) == 31)
+    }
+
+    @Test func birthdayDateSuporta29DeFevereiroSemPrecisarDeAnoBissexto() {
+        // 2000 é bissexto, então fevereiro sempre oferece 29 dias — usuário não precisa
+        // navegar até um ano bissexto para conseguir escolher 29/02.
+        let result = ImportantDateFormView.birthdayDate(month: 2, day: 29, calendar: calendar)
+
+        #expect(calendar.component(.year, from: result) == 2000)
+        #expect(calendar.component(.month, from: result) == 2)
+        #expect(calendar.component(.day, from: result) == 29)
+    }
+
+    @Test func daysInBirthdayMonthRetorna29DiasParaFevereiro() {
+        #expect(ImportantDateFormView.daysInBirthdayMonth(2, calendar: calendar) == Array(1...29))
+    }
+
+    @Test func daysInBirthdayMonthRetorna31DiasParaJaneiro() {
+        #expect(ImportantDateFormView.daysInBirthdayMonth(1, calendar: calendar) == Array(1...31))
+    }
+
+    @Test func parseBirthYearRetornaNilQuandoVazioOuInvalido() {
+        #expect(ImportantDateFormView.parseBirthYear("") == nil)
+        #expect(ImportantDateFormView.parseBirthYear("   ") == nil)
+        #expect(ImportantDateFormView.parseBirthYear("abc") == nil)
+    }
+
+    @Test func parseBirthYearConverteTextoValido() {
+        #expect(ImportantDateFormView.parseBirthYear("1990") == 1990)
+        #expect(ImportantDateFormView.parseBirthYear("  1990  ") == 1990)
+    }
+
+    @Test func timeComponentsExtraiHoraEMinuto() {
+        let time = date(2026, 1, 1, hour: 18, minute: 30)
+
+        let result = ImportantDateFormView.timeComponents(from: time, calendar: calendar)
+
+        #expect(result.hour == 18)
+        #expect(result.minute == 30)
+    }
+
+    @Test func timeComponeDataComHoraEMinutoInformados() {
+        let reference = date(2026, 7, 20)
+
+        let result = ImportantDateFormView.time(hour: 9, minute: 15, calendar: calendar, referenceDate: reference)
+
+        #expect(calendar.component(.hour, from: result) == 9)
+        #expect(calendar.component(.minute, from: result) == 15)
     }
 }

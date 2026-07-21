@@ -26,11 +26,16 @@ Entidade central: `ImportantDate` (SwiftData `@Model`).
 | `type` | `DateType` (enum) | `.birthday`, `.commemorative`, `.memorial` |
 | `relationship` | `Relationship?` (enum) | ex: `.partner`, `.family`, `.friend`, `.colleague`, `.other` — usado como contexto p/ IA |
 | `notes` | `String?` | contexto livre (gostos, interesses) — habilita a sugestão de presente |
+| `birthYear` | `Int?` | ano de nascimento (opcional; só p/ `type == .birthday`) — habilita cálculo de idade (T13) |
+| `notificationHour` | `Int` | hora do lembrete desta data (default 9); vale para as 3 camadas (T13) |
+| `notificationMinute` | `Int` | minuto do lembrete desta data (default 0) (T13) |
 | `createdAt` | `Date` | housekeeping |
 
 Regras derivadas:
 
 - **Próxima ocorrência**: datas são recorrentes anualmente; "quanto falta" e "datas chegando" são calculados sobre a próxima ocorrência (dia/mês) a partir de hoje.
+- **Aniversários guardam dia/mês contra um ano bissexto fixo (2000)** no campo `date`, para que 29/02 seja representável independente de haver ou não `birthYear`. `birthYear` fica separado, só para idade (`age(on:)`). O ano de `date` é ignorado pela próxima ocorrência.
+- **Idade**: `age(on:) -> Int?` retorna a idade na próxima ocorrência quando `birthYear` está preenchido; `nil` caso contrário (T13/T15).
 - Enums (`DateType`, `Relationship`) devem conformar a `Codable` e, quando expostos em intents, a `AppEnum`.
 
 > O modelo acima é a proposta inicial; o sub-agente da task de modelo pode refinar nomes/tipos, mas mudanças estruturais (novos campos, novas entidades) devem voltar para revisão do orquestrador.
@@ -41,8 +46,10 @@ Regras derivadas:
 
 - 3 notificações por data: **1 semana antes**, **1 dia antes** e **no dia**.
 - Implementação: `UserNotifications` + `UNCalendarNotificationTrigger`, calculadas a partir do campo `date` (próxima ocorrência).
+- **Hora por data:** a hora de disparo é definida por cada `ImportantDate` (`notificationHour`/`notificationMinute`, default 9:00) e vale para as 3 camadas — não é mais uma constante global (T13/T14).
 - Agendamento sincronizado com o ciclo de vida da entidade: criar/editar reagenda, excluir cancela (identificadores determinísticos derivados do `id` + camada).
 - Pedir permissão de notificação no primeiro uso relevante (não no launch).
+- **Notificações interativas (T22):** `UNNotificationCategory` com ações "Adiar" (reagenda a curto prazo) e "Abrir para mensagem" (deep-link ao detalhe da data p/ gerar mensagem via `AISuggestionService`).
 
 ### 3.2 App Intents (consultas via Siri)
 
@@ -79,6 +86,29 @@ Requisitos técnicos:
 - Ambas as operações retornam `Result<T, AISuggestionError>` — **não `throws`**. Indisponibilidade do modelo (`SystemLanguageModel.default.availability`, exposta via `AISuggestionService.availability`/`isAvailable`) e falhas de geração (`LanguageModelSession.GenerationError`, mapeado caso a caso em `domainError(from:)`) são convertidas em `AISuggestionError` (enum com `.unavailable(reason)` e `.generationFailed(String)`) com mensagens em pt-BR (`errorDescription`), para a UI degradar graciosamente (esconder/desabilitar os botões de IA com explicação) sem `try/catch` espalhado pelas views.
 - Saída estruturada via `@Generable` na sugestão de presente; a mensagem personalizada retorna `String` livre.
 
+### 3.5 Importação de datas existentes (Contatos + EventKit)
+
+Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito** — nada entra automaticamente.
+
+- **Fontes:** `Contacts` (aniversários dos contatos, com ano quando disponível → `birthYear`) e `EventKit` (eventos do Calendário, incl. o calendário de Aniversários). Duas permissões, pedidas **sob demanda** (só ao tocar em importar).
+- **Fluxo de UX:** toque explícito → permissão → **tela de revisão** (sheet) com os candidatos em checkboxes pré-marcados, **agrupados por fonte**, com **dedupe** contra datas já salvas (mesmo nome + dia/mês) → importa **só os selecionados**, criando `ImportantDate` + agendando notificações (reuso do `NotificationService`).
+- **Pontos de entrada:** botão no *empty state* da lista e item de menu "Importar…" na toolbar da lista (re-executável). Sem tela de Ajustes dedicada (a hora virou por-data; não há outra config a hospedar).
+- Modelo `ImportCandidate` compartilhado pelas duas fontes alimenta a mesma tela de revisão.
+
+### 3.6 Widget (WidgetKit)
+
+- Widget de "próximas datas" com contagem regressiva, nas famílias de **home screen** e **lock screen**.
+- Lê o store SwiftData compartilhado (App Group, ver 3.8) e reusa `nextOccurrence`/`daysUntilNextOccurrence`.
+
+### 3.7 Apple Watch
+
+- App watchOS com a lista das próximas datas + **complication** de contagem regressiva na carátula.
+- Lê o mesmo store compartilhado (App Group).
+
+### 3.8 Compartilhamento de dados (App Group)
+
+- O `ModelContainer` SwiftData vive num container em **App Group**, para que o widget e o app do watch leiam os mesmos dados do app principal (T19, pré-requisito de 3.6 e 3.7).
+
 ## 4. Stack técnico
 
 | Camada | Tecnologia |
@@ -89,6 +119,10 @@ Requisitos técnicos:
 | Integração com o sistema | App Intents "clássicos" (App Schemas avaliados e descartados — sem fit para o domínio, ver seção 7) |
 | IA | Foundation Models framework (on-device) |
 | Automação | Shortcuts, via os App Intents expostos |
+| Importação | Contacts + EventKit |
+| Widget | WidgetKit (home + lock screen) |
+| Watch | watchOS (app + complication) |
+| Compartilhamento | App Group (store SwiftData compartilhado entre app, widget e watch) |
 | Testes | Swift Testing — unitários no target `MarcoTests` (testes de UI / `MarcoUITests` fora de escopo; fluxos de UI verificados pelo `sim-verifier`) |
 
 > Stack confirmada no SDK instalado (iOS 26.4): cada camada foi validada pelo sub-agente `api-scout` antes da implementação (T4 — notificações; T5–T8 — App Intents; T10 — Foundation Models). Divergências e decisões encontradas nesse processo estão registradas na seção 7.
@@ -159,10 +193,55 @@ Requisitos técnicos:
   Passada de integração: strings de UI consistentes (pt-BR), estados vazios, revisão dos testes, atualização desta spec com o que mudou.
   *Aceite:* `xcodebuild test -only-testing:MarcoTests` verde; seções 2–4 da spec refletem o código real. *Depende de:* todas
 
+### Fase 2 — Extensões (T13+)
+
+> Novas features aprovadas: hora de notificação por data, importação de Contatos/EventKit, aniversário sem ano (com idade), widget, Apple Watch e notificações interativas. Mesmas regras da seção 5 (uma task por vez, pipeline SDD, checkbox só pelo orquestrador).
+
+- [x] **T13 — Modelo: hora por data + ano de nascimento + idade**
+  Em `ImportantDate`: campos `notificationHour`/`notificationMinute` (default 9:00) e `birthYear: Int?`; helper `age(on:) -> Int?`; convenção do ano bissexto fixo (2000) para o `date` de aniversários. `NotificationService.triggerSpecs` passa a ler a hora da própria data (removendo/rebaixando as constantes `defaultHour`/`defaultMinute`). Migração SwiftData leve.
+  *Aceite:* testes de `age(on:)` e de trigger com hora custom passam; store existente migra sem quebrar. *Depende de:* T2, T4
+
+- [x] **T14 — Formulário: hora por data + aniversário sem ano**
+  Em `ImportantDateFormView`: `DatePicker(.hourAndMinute)` para a hora do lembrete; quando `type == .birthday`, trocar o `DatePicker(.date)` por seletor **só dia/mês** + campo opcional "Ano de nascimento". Tipos não-aniversário mantêm data completa. Atualizar `save()`.
+  *Aceite:* criar aniversário sem ano persiste dia/mês correto (incl. 29/02); a hora escolhida reflete nos pending requests. *Depende de:* T13, T3
+
+- [ ] **T15 — Idade nos aniversários**
+  Mostrar "faz N anos" na lista e/ou detalhe quando houver `birthYear`.
+  *Aceite:* item com ano mostra idade correta na próxima ocorrência; sem ano, nada é exibido. *Depende de:* T13, T3
+
+- [ ] **T16 — ContactsImportService (aniversários dos Contatos)**
+  Framework `Contacts`: permissão sob demanda, buscar contatos com aniversário, produzir candidatos `type = .birthday` (com `birthYear` quando o contato tiver ano).
+  *Aceite:* serviço retorna candidatos a partir dos contatos; sem permissão degrada sem crash. *Depende de:* T13
+
+- [ ] **T17 — EventKitImportService (eventos do Calendário)**
+  `EventKit`: permissão sob demanda, buscar eventos num intervalo (inclui o calendário de Aniversários), produzir candidatos com data/tipo aproximado.
+  *Aceite:* serviço retorna candidatos a partir dos eventos; sem permissão degrada sem crash. *Depende de:* T2
+
+- [ ] **T18 — Tela de revisão de importação + pontos de entrada**
+  Modelo `ImportCandidate` compartilhado pelas duas fontes; sheet listando candidatos com checkbox (pré-marcados), **agrupados por fonte** (Contatos / Calendário), com **dedupe** contra datas já salvas (mesmo nome + dia/mês). Importar só os selecionados → cria `ImportantDate` + agenda notificações. Entradas: botão no *empty state* da lista + item de menu "Importar…" na toolbar. Permissão pedida só ao tocar em importar.
+  *Aceite:* fluxo importa apenas os selecionados; reexecutar não duplica; itens já existentes aparecem marcados/ocultos. *Depende de:* T16, T17, T4
+
+- [ ] **T19 — App Group + ModelContainer compartilhado**
+  Mover o store SwiftData para um container em App Group, para widget e watch lerem os mesmos dados. Ajustar `MarcoApp`/`Persistence`.
+  *Aceite:* app continua lendo/gravando normalmente pelo container do App Group. *Depende de:* T1
+
+- [ ] **T20 — Widget (WidgetKit: home + lock screen)**
+  Extensão WidgetKit com timeline de "próximas datas" (contagem regressiva), famílias de home e lock screen, lendo o store compartilhado; reusa `nextOccurrence`/`daysUntilNextOccurrence`.
+  *Aceite:* widget mostra as próximas datas e atualiza a contagem no simulador. *Depende de:* T19, T5
+
+- [ ] **T21 — App Apple Watch (lista + complication)**
+  Target watchOS: lista das próximas datas + complication de contagem regressiva na carátula, lendo o store compartilhado.
+  *Aceite:* app do watch lista as datas; complication mostra a próxima. *Depende de:* T19
+
+- [ ] **T22 — Notificações interativas**
+  `UNNotificationCategory` com ações "Adiar" (reagenda a curto prazo) e "Abrir para mensagem" (deep-link abre o detalhe da data p/ gerar mensagem via `AISuggestionService`). Delegate trata as ações.
+  *Aceite:* notificação exibe as ações; "Adiar" reagenda; abrir leva ao detalhe. *Depende de:* T4, T10
+
 ## 7. Em aberto
 
 - [x] **Tom padrão das mensagens geradas: fixo por `relationship`.** Decidido na T10 (`AISuggestionService.tone(for:)`): `.partner`/`.family` → carinhoso, `.friend` → engraçado, `.colleague`/`.other`/nil → formal. `type == .memorial` sempre sobrepõe para tom reflexivo, independente do `relationship`. Não configurável pelo usuário no MVP.
 - [ ] Limite de datas antes de precisar de paginação/busca na UI (decidir se surgir necessidade; fora do MVP por ora)
+- [ ] **Ideias brainstormadas, não priorizadas (Fase 2):** sincronização multi-dispositivo via iCloud/CloudKit; Live Activity para datas iminentes (contagem no dia); foto por pessoa; busca/filtro na lista (relacionado ao item de paginação acima). Promover a task se/quando o usuário pedir.
 - [x] **App Schemas: não aplicável.** Avaliado na T5 (api-scout, SDK iOS 26.4): o namespace `AppIntents.AssistantSchemas` só cobre os domínios `Books`, `Browser`, `Camera`, `Files`, `Journal`, `Mail`, `Photos`, `Presentation`, `Reader`, `Spreadsheet`, `System`, `VisualIntelligence`, `Whiteboard`, `WordProcessor` — nenhum schema para lembretes, tarefas, calendário ou datas. Marco segue com App Intents "clássicos" (custom), como a spec já assumia.
 - **Limitação de ambiente — geração real do Foundation Models não verificável neste Mac (T11):** `sim-verifier` confirmou `SystemLanguageModel.default.availability == .available` no host de desenvolvimento, mas toda chamada de `respond` falha em runtime por um erro de infraestrutura do próprio framework (guardrail/safety checker: `DecodingError.keyNotFound("thoughtContents")`, provável mismatch entre assets do modelo e o simulador iOS 26.4 usados neste host) — não é um bug do código do Marco. A UI da T11 trata esse erro graciosamente (mensagem em pt-BR, sem crash), mas nem o caminho de sucesso (resultado + copiar) nem o caminho de indisponibilidade genuína (`.unavailable`) puderam ser exercitados neste ambiente. Repetir manualmente em um Mac com Apple Intelligence/assets íntegros antes de considerar a funcionalidade de IA validada ponta a ponta.
 

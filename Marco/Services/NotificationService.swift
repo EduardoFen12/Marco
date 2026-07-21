@@ -32,7 +32,7 @@ enum NotificationLayer: String, CaseIterable {
 
 /// Trigger calculado para uma camada de notificação: identificador determinístico +
 /// `DateComponents` para um `UNCalendarNotificationTrigger` recorrente anual.
-struct NotificationTriggerSpec: Equatable {
+struct NotificationTriggerSpec: Equatable { 
     let layer: NotificationLayer
     let identifier: String
     let dateComponents: DateComponents
@@ -42,10 +42,6 @@ struct NotificationTriggerSpec: Equatable {
 /// de uma `ImportantDate`. A lógica de cálculo dos triggers é pura e testável sem tocar
 /// `UNUserNotificationCenter`; `schedule`/`cancel` são wrappers finos sobre o center.
 enum NotificationService {
-    /// Horário padrão de disparo (9h) — as datas não têm hora própria, apenas dia/mês.
-    static let defaultHour = 9
-    static let defaultMinute = 0
-
     static func identifiers(for importantDate: ImportantDate) -> [String] {
         NotificationLayer.allCases.map { identifier(for: importantDate, layer: $0) }
     }
@@ -71,8 +67,8 @@ enum NotificationService {
                 return nil
             }
             var components = calendar.dateComponents([.month, .day], from: fireDate)
-            components.hour = defaultHour
-            components.minute = defaultMinute
+            components.hour = importantDate.notificationHour
+            components.minute = importantDate.notificationMinute
             return NotificationTriggerSpec(
                 layer: layer,
                 identifier: identifier(for: importantDate, layer: layer),

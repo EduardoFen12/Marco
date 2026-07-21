@@ -14,6 +14,13 @@ final class ImportantDate {
     var type: DateType
     var relationship: Relationship?
     var notes: String?
+    /// Ano de nascimento, opcional; só relevante quando `type == .birthday`. Separado de `date`
+    /// (que guarda dia/mês contra o ano bissexto fixo 2000) para habilitar `age(on:)`.
+    var birthYear: Int?
+    /// Hora/minuto do lembrete desta data específica; vale para as 3 camadas de notificação.
+    /// Novos campos com default — lightweight migration do SwiftData para stores existentes.
+    var notificationHour: Int = 9
+    var notificationMinute: Int = 0
     var createdAt: Date
 
     init(
@@ -23,6 +30,9 @@ final class ImportantDate {
         type: DateType,
         relationship: Relationship? = nil,
         notes: String? = nil,
+        birthYear: Int? = nil,
+        notificationHour: Int = 9,
+        notificationMinute: Int = 0,
         createdAt: Date = .now
     ) {
         self.id = id
@@ -31,6 +41,9 @@ final class ImportantDate {
         self.type = type
         self.relationship = relationship
         self.notes = notes
+        self.birthYear = birthYear
+        self.notificationHour = notificationHour
+        self.notificationMinute = notificationMinute
         self.createdAt = createdAt
     }
 }
@@ -51,6 +64,14 @@ extension ImportantDate {
         let startOfToday = calendar.startOfDay(for: referenceDate)
         let occurrence = nextOccurrence(from: referenceDate, calendar: calendar)
         return calendar.dateComponents([.day], from: startOfToday, to: occurrence).day ?? 0
+    }
+
+    /// Idade que a pessoa completa na próxima ocorrência do aniversário (ano da ocorrência
+    /// menos `birthYear`). `nil` quando `birthYear` não está preenchido.
+    func age(on referenceDate: Date = .now, calendar: Calendar = .current) -> Int? {
+        guard let birthYear else { return nil }
+        let occurrence = nextOccurrence(from: referenceDate, calendar: calendar)
+        return calendar.component(.year, from: occurrence) - birthYear
     }
 
     /// Calcula a próxima data (dia `day`/mês `month`, ignorando ano) que seja igual ou posterior

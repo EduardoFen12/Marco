@@ -19,9 +19,13 @@ struct ImportantDateFormView: View {
 
     @State private var name: String
     @State private var date: Date
+    @State private var birthdayMonth: Int
+    @State private var birthdayDay: Int
     @State private var type: DateType
     @State private var relationship: Relationship?
     @State private var notes: String
+    @State private var birthYearText: String
+    @State private var notificationTime: Date
 
     @State private var isSuggestingGift = false
     @State private var giftResult: Result<GiftSuggestion, AISuggestionError>?
@@ -32,9 +36,18 @@ struct ImportantDateFormView: View {
         self.importantDate = importantDate
         _name = State(initialValue: importantDate?.name ?? "")
         _date = State(initialValue: importantDate?.date ?? .now)
+        let referenceDate = importantDate?.date ?? .now
+        let components = Calendar.current.dateComponents([.month, .day], from: referenceDate)
+        _birthdayMonth = State(initialValue: components.month ?? 1)
+        _birthdayDay = State(initialValue: components.day ?? 1)
         _type = State(initialValue: importantDate?.type ?? .birthday)
         _relationship = State(initialValue: importantDate?.relationship)
         _notes = State(initialValue: importantDate?.notes ?? "")
+        _birthYearText = State(initialValue: importantDate?.birthYear.map(String.init) ?? "")
+        _notificationTime = State(initialValue: Self.time(
+            hour: importantDate?.notificationHour ?? 9,
+            minute: importantDate?.notificationMinute ?? 0
+        ))
     }
 
     private var isNameValid: Bool {
@@ -47,16 +60,72 @@ struct ImportantDateFormView: View {
         isModelAvailable && !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// Componentes de hora/minuto extraídos de `time`, prontos para gravar em
+    /// `notificationHour`/`notificationMinute`.
+    static func timeComponents(from time: Date, calendar: Calendar = .current) -> (hour: Int, minute: Int) {
+        let components = calendar.dateComponents([.hour, .minute], from: time)
+        return (components.hour ?? 9, components.minute ?? 0)
+    }
+
+    /// Monta um `Date` de referência com a hora/minuto informados — usado para inicializar
+    /// o `DatePicker` de hora a partir dos valores salvos em `notificationHour`/`notificationMinute`.
+    static func time(hour: Int, minute: Int, calendar: Calendar = .current, referenceDate: Date = .now) -> Date {
+        calendar.date(bySettingHour: hour, minute: minute, second: 0, of: referenceDate) ?? referenceDate
+    }
+
+    /// Compõe a data de um aniversário a partir de mês/dia escolhidos nos `Picker`s, contra o
+    /// ano bissexto fixo 2000 (mesma convenção do model — ver `ImportantDate.swift`), para 29/02
+    /// ser sempre selecionável independente do ano de nascimento.
+    static func birthdayDate(month: Int, day: Int, calendar: Calendar = .current) -> Date {
+        calendar.date(from: DateComponents(year: 2000, month: month, day: day)) ?? .now
+    }
+
+    /// Dias válidos do mês informado, contra o ano fixo 2000 (bissexto — fevereiro sempre tem 29).
+    static func daysInBirthdayMonth(_ month: Int, calendar: Calendar = .current) -> [Int] {
+        let reference = calendar.date(from: DateComponents(year: 2000, month: month, day: 1)) ?? .now
+        let range = calendar.range(of: .day, in: .month, for: reference) ?? 1..<32
+        return Array(range)
+    }
+
+    /// Parseia o campo opcional "Ano de nascimento" para `Int?` — `nil` se vazio ou inválido.
+    static func parseBirthYear(_ text: String) -> Int? {
+        Int(text.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
     var body: some View {
         Form {
             Section("Informações") {
                 TextField("Nome", text: $name)
-                DatePicker("Data", selection: $date, displayedComponents: .date)
+                if type == .birthday {
+                    HStack {
+                        Picker("Mês", selection: $birthdayMonth) {
+                            ForEach(Array(Calendar.current.monthSymbols.enumerated()), id: \.offset) { index, symbol in
+                                Text(symbol.capitalized).tag(index + 1)
+                            }
+                        }
+                        Picker("Dia", selection: $birthdayDay) {
+                            ForEach(Self.daysInBirthdayMonth(birthdayMonth), id: \.self) { day in
+                                Text("\(day)").tag(day)
+                            }
+                        }
+                    }
+                    .onChange(of: birthdayMonth) {
+                        let validDays = Self.daysInBirthdayMonth(birthdayMonth)
+                        if !validDays.contains(birthdayDay) {
+                            birthdayDay = validDays.last ?? 1
+                        }
+                    }
+                    TextField("Ano de nascimento (opcional)", text: $birthYearText)
+                        .keyboardType(.numberPad)
+                } else {
+                    DatePicker("Data", selection: $date, displayedComponents: .date)
+                }
                 Picker("Tipo", selection: $type) {
                     ForEach(DateType.allCases, id: \.self) { type in
                         Text(type.displayName).tag(type)
                     }
                 }
+                DatePicker("Hora do lembrete", selection: $notificationTime, displayedComponents: .hourAndMinute)
             }
 
             Section("Relacionamento") {
@@ -127,22 +196,31 @@ struct ImportantDateFormView: View {
     private func save() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        let finalDate = type == .birthday ? Self.birthdayDate(month: birthdayMonth, day: birthdayDay) : date
+        let finalBirthYear = type == .birthday ? Self.parseBirthYear(birthYearText) : nil
+        let (hour, minute) = Self.timeComponents(from: notificationTime)
 
         let savedDate: ImportantDate
         if let importantDate {
             importantDate.name = trimmedName
-            importantDate.date = date
+            importantDate.date = finalDate
             importantDate.type = type
             importantDate.relationship = relationship
             importantDate.notes = trimmedNotes.isEmpty ? nil : trimmedNotes
+            importantDate.birthYear = finalBirthYear
+            importantDate.notificationHour = hour
+            importantDate.notificationMinute = minute
             savedDate = importantDate
         } else {
             let newDate = ImportantDate(
                 name: trimmedName,
-                date: date,
+                date: finalDate,
                 type: type,
                 relationship: relationship,
-                notes: trimmedNotes.isEmpty ? nil : trimmedNotes
+                notes: trimmedNotes.isEmpty ? nil : trimmedNotes,
+                birthYear: finalBirthYear,
+                notificationHour: hour,
+                notificationMinute: minute
             )
             modelContext.insert(newDate)
             savedDate = newDate
