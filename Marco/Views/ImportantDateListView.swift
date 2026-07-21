@@ -10,6 +10,7 @@ struct ImportantDateListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var importantDates: [ImportantDate]
     @State private var isPresentingNewDate = false
+    @State private var isPresentingImport = false
 
     private var sortedDates: [ImportantDate] {
         importantDates.sorted {
@@ -21,11 +22,15 @@ struct ImportantDateListView: View {
         NavigationStack {
             List {
                 if sortedDates.isEmpty {
-                    ContentUnavailableView(
-                        "Nenhuma data cadastrada",
-                        systemImage: "calendar.badge.plus",
-                        description: Text("Toque em + para adicionar uma data importante.")
-                    )
+                    ContentUnavailableView {
+                        Label("Nenhuma data cadastrada", systemImage: "calendar.badge.plus")
+                    } description: {
+                        Text("Toque em + para adicionar uma data importante.")
+                    } actions: {
+                        Button("Importar…") {
+                            isPresentingImport = true
+                        }
+                    }
                 } else {
                     ForEach(sortedDates) { importantDate in
                         NavigationLink {
@@ -40,8 +45,17 @@ struct ImportantDateListView: View {
             .navigationTitle("Datas importantes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        isPresentingNewDate = true
+                    Menu {
+                        Button {
+                            isPresentingNewDate = true
+                        } label: {
+                            Label("Adicionar", systemImage: "plus")
+                        }
+                        Button {
+                            isPresentingImport = true
+                        } label: {
+                            Label("Importar…", systemImage: "square.and.arrow.down")
+                        }
                     } label: {
                         Label("Adicionar", systemImage: "plus")
                     }
@@ -51,6 +65,9 @@ struct ImportantDateListView: View {
                 NavigationStack {
                     ImportantDateFormView(importantDate: nil)
                 }
+            }
+            .sheet(isPresented: $isPresentingImport) {
+                ImportCandidatesReviewView()
             }
         }
     }

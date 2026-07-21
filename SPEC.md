@@ -217,7 +217,7 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
   `EventKit`: permissão sob demanda, buscar eventos num intervalo (inclui o calendário de Aniversários), produzir candidatos com data/tipo aproximado.
   *Aceite:* serviço retorna candidatos a partir dos eventos; sem permissão degrada sem crash. *Depende de:* T2
 
-- [ ] **T18 — Tela de revisão de importação + pontos de entrada**
+- [x] **T18 — Tela de revisão de importação + pontos de entrada**
   Modelo `ImportCandidate` compartilhado pelas duas fontes; sheet listando candidatos com checkbox (pré-marcados), **agrupados por fonte** (Contatos / Calendário), com **dedupe** contra datas já salvas (mesmo nome + dia/mês). Importar só os selecionados → cria `ImportantDate` + agenda notificações. Entradas: botão no *empty state* da lista + item de menu "Importar…" na toolbar. Permissão pedida só ao tocar em importar.
   *Aceite:* fluxo importa apenas os selecionados; reexecutar não duplica; itens já existentes aparecem marcados/ocultos. *Depende de:* T16, T17, T4
 

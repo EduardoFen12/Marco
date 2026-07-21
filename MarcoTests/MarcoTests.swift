@@ -525,3 +525,49 @@ struct EventKitImportServiceCandidateTests {
         #expect(EventKitImportService.candidate(name: nil, date: date(2026, 1, 1), isBirthday: false) == nil)
     }
 }
+
+struct ImportCandidatesReviewViewDeduplicateTests {
+    // T18: dedupe entre candidatos e `ImportantDate` já salvas — mesmo nome (case/espaço
+    // insensitive) e mesmo dia/mês. Lógica pura, sem tocar SwiftData/Contacts/EventKit.
+    let calendar = Calendar(identifier: .gregorian)
+
+    private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    @Test func removeCandidatoComMesmoNomeEDiaMes() {
+        let existing = ImportantDate(name: "Mari", date: date(2000, 5, 31), type: .birthday)
+        let candidate = ImportCandidate(name: "Mari", date: date(2000, 5, 31), type: .birthday, source: .contacts)
+
+        let result = ImportCandidatesReviewView.deduplicate([candidate], against: [existing], calendar: calendar)
+
+        #expect(result.isEmpty)
+    }
+
+    @Test func comparacaoDeNomeIgnoraEspacosEMaiusculas() {
+        let existing = ImportantDate(name: "  Mari  ", date: date(2000, 5, 31), type: .birthday)
+        let candidate = ImportCandidate(name: "MARI", date: date(2000, 5, 31), type: .birthday, source: .calendar)
+
+        let result = ImportCandidatesReviewView.deduplicate([candidate], against: [existing], calendar: calendar)
+
+        #expect(result.isEmpty)
+    }
+
+    @Test func mantemCandidatoQuandoNomeDifere() {
+        let existing = ImportantDate(name: "Mari", date: date(2000, 5, 31), type: .birthday)
+        let candidate = ImportCandidate(name: "Ana", date: date(2000, 5, 31), type: .birthday, source: .contacts)
+
+        let result = ImportCandidatesReviewView.deduplicate([candidate], against: [existing], calendar: calendar)
+
+        #expect(result.count == 1)
+    }
+
+    @Test func mantemCandidatoQuandoDiaMesDifere() {
+        let existing = ImportantDate(name: "Mari", date: date(2000, 5, 31), type: .birthday)
+        let candidate = ImportCandidate(name: "Mari", date: date(2000, 6, 1), type: .birthday, source: .contacts)
+
+        let result = ImportCandidatesReviewView.deduplicate([candidate], against: [existing], calendar: calendar)
+
+        #expect(result.count == 1)
+    }
+}
