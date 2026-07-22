@@ -40,6 +40,10 @@ Regras derivadas:
 
 > O modelo acima é a proposta inicial; o sub-agente da task de modelo pode refinar nomes/tipos, mas mudanças estruturais (novos campos, novas entidades) devem voltar para revisão do orquestrador.
 
+**Localização no projeto (desde T20):** `ImportantDate`, `DateType`, `Relationship` e `Persistence` (o `ModelContainer`) moraram em `Marco/Models`/`Marco/Services` até a T19, mas foram movidos para `Shared/` (pasta sincronizada, Xcode 16+) quando o widget (T20) passou a precisar compilar o mesmo código num target separado. `Marco/Models` não existe mais.
+
+**Entidade derivada, só do lado Watch (T21):** `WatchDateSnapshot` (`WatchShared/WatchDateSnapshot.swift`) — `Codable` simples (`id`, `name`, `kind: WatchDateKind`, `nextOccurrence: Date`), **não é um `@Model` SwiftData**. É o formato serializado que o iPhone envia por `WatchConnectivity` (ver 3.7/3.8) e que o Watch persiste localmente; existe porque o Watch não pode abrir o `ModelContainer` do iPhone (App Group não atravessa dispositivos), então carrega só o subconjunto de dados que a lista e a complication precisam, não a entidade completa.
+
 ## 3. Funcionalidades
 
 ### 3.1 Notificações locais
@@ -97,17 +101,21 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
 
 ### 3.6 Widget (WidgetKit)
 
-- Widget de "próximas datas" com contagem regressiva, nas famílias de **home screen** e **lock screen**.
-- Lê o store SwiftData compartilhado (App Group, ver 3.8) e reusa `nextOccurrence`/`daysUntilNextOccurrence`.
+- Extensão `MarcoWidgets`, embutida no app iOS: widget "próxima data" com contagem regressiva (`NextDateWidget.swift`), famílias **home screen** (`.systemSmall`, `.systemMedium`) e **lock screen** (`.accessoryCircular`, `.accessoryRectangular`, `.accessoryInline`).
+- `NextDateProvider` (`TimelineProvider`) lê o store SwiftData compartilhado (App Group, ver 3.8) via `ModelContext(Persistence.container)` — processo próprio, mesmo arquivo SQLite — e reusa `nextOccurrence`/`daysUntilNextOccurrence` de `ImportantDate` (sem recalcular data). Gera 7 entries diárias, `policy: .after(7 dias à frente)`.
+- `WidgetCenter.shared.reloadAllTimelines()` é chamado no ponto único de CRUD (`NotificationService.cancel(_:center:)`) para o widget refletir criação/edição/exclusão sem esperar o refresh automático do sistema.
+- Família de lock screen declarada mas não verificada em runtime nesta rodada (limitação de automação do simulador, ver seção 7).
 
 ### 3.7 Apple Watch
 
-- App watchOS com a lista das próximas datas + **complication** de contagem regressiva na carátula.
-- Lê o mesmo store compartilhado (App Group).
+- Target watchOS `MarcoWatch` (app companion, embutido no `Marco`) com lista das próximas datas (`WatchDateListView`), e extensão `MarcoWatchWidgets` (embutida no `MarcoWatch`) com a **complication** de contagem regressiva (`NextDateComplication.swift`, `TimelineProvider`/`Widget`, famílias `.accessoryCircular`/`.accessoryRectangular`/`.accessoryInline`/`.accessoryCorner` — a última exclusiva de watchOS).
+- **Não lê o store compartilhado diretamente** — App Group não atravessa dispositivos físicos (achado do `api-scout` na T21, ver seção 7). Em vez disso, sincroniza via `WatchConnectivity`: o app iOS (`WatchConnectivityService.sync(_:)`) monta um `[WatchDateSnapshot]` a partir de `[ImportantDate]` e envia com `WCSession.default.updateApplicationContext(_:)` — chamado do mesmo ponto único de CRUD do widget (`NotificationService.cancel`). O Watch recebe em `WatchConnectivityReceiver.session(_:didReceiveApplicationContext:)`, persiste em `WatchSnapshotStore` (App Group **próprio do watch**, ver 3.8) e chama `WidgetCenter.shared.reloadAllTimelines()` para atualizar a complication.
+- ClockKit não é usado (deprecated desde watchOS 9 em favor de WidgetKit).
 
 ### 3.8 Compartilhamento de dados (App Group)
 
-- O `ModelContainer` SwiftData vive num container em **App Group**, para que o widget e o app do watch leiam os mesmos dados do app principal (T19, pré-requisito de 3.6 e 3.7).
+- O `ModelContainer` SwiftData (`Persistence.container`, `Shared/Persistence.swift`) vive num container em **App Group** (`group.Eduardo.Marco`), compartilhado entre o app iOS e a extensão de widget `MarcoWidgets` — ambos no mesmo dispositivo/processo separado, mesmo arquivo SQLite (T19, pré-requisito de 3.6).
+- O par iOS↔watchOS **não** usa esse App Group (containers são por dispositivo, não compartilhados — ver 3.7). O Watch tem seu próprio App Group local (`group.Eduardo.Marco.watch`), compartilhado só entre `MarcoWatch` e `MarcoWatchWidgets`, guardando apenas o snapshot recebido via `WatchConnectivity` (não o `ModelContainer` completo).
 
 ## 4. Stack técnico
 
@@ -120,21 +128,22 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
 | IA | Foundation Models framework (on-device) |
 | Automação | Shortcuts, via os App Intents expostos |
 | Importação | Contacts + EventKit |
-| Widget | WidgetKit (home + lock screen) |
-| Watch | watchOS (app + complication) |
-| Compartilhamento | App Group (store SwiftData compartilhado entre app, widget e watch) |
+| Widget | WidgetKit (extensão `MarcoWidgets`: home + lock screen) |
+| Watch | watchOS (target `MarcoWatch` + extensão de complication `MarcoWatchWidgets`, WidgetKit — ClockKit não usado) |
+| Compartilhamento app↔widget | App Group `group.Eduardo.Marco` (store SwiftData compartilhado, mesmo dispositivo) |
+| Compartilhamento iOS↔watchOS | `WatchConnectivity` (`WCSession.updateApplicationContext`) — App Group não atravessa dispositivos; Watch persiste um snapshot `Codable` num App Group próprio (`group.Eduardo.Marco.watch`) |
 | Testes | Swift Testing — unitários no target `MarcoTests` (testes de UI / `MarcoUITests` fora de escopo; fluxos de UI verificados pelo `sim-verifier`) |
 
-> Stack confirmada no SDK instalado (iOS 26.4): cada camada foi validada pelo sub-agente `api-scout` antes da implementação (T4 — notificações; T5–T8 — App Intents; T10 — Foundation Models). Divergências e decisões encontradas nesse processo estão registradas na seção 7.
+> Stack confirmada no SDK instalado (iOS 26.4): cada camada foi validada pelo sub-agente `api-scout` antes da implementação (T4 — notificações; T5–T8 — App Intents; T10 — Foundation Models; T20 — WidgetKit; T21 — watchOS/WatchConnectivity). Divergências e decisões encontradas nesse processo estão registradas na seção 7.
 
 ## 5. Processo de implementação (orquestração SDD)
 
 - O **agente principal apenas orquestra**: nunca edita código do app diretamente. Ele delega cada task ao sub-agente **`swift-implementer`**, revisa o resultado e atualiza esta spec.
 - Sub-agentes de apoio (todos em `.claude/agents/`, rodando em Sonnet):
-  - **`api-scout`** — antes de tasks que usam APIs "a verificar" (T4, T5–T8, T10), confirma no SDK instalado que os símbolos pressupostos existem e briefa o implementador.
+  - **`api-scout`** — antes de tasks que usam APIs "a verificar" (T4, T5–T8, T10, T20, T21), confirma no SDK instalado que os símbolos pressupostos existem e briefa o implementador.
   - **`swift-implementer`** — implementa a task.
   - **`spec-reviewer`** — após a implementação, verifica os critérios de aceite de forma independente e dá o veredicto.
-  - **`sim-verifier`** — para critérios que exigem observar o app rodando (T3, T4, T7, T11), exercita o simulador e coleta evidências.
+  - **`sim-verifier`** — para critérios que exigem observar o app rodando (T3, T4, T7, T11, T20, T21), exercita o simulador e coleta evidências.
 - **Execução consecutiva**: uma task por vez, na ordem da seção 6, respeitando dependências. (Paralelismo com worktrees fica como experimento futuro.)
 - Cada task delegada recebe: o caminho desta spec, o ID da task (ex: `T3`) e os critérios de aceite. O sub-agente implementa **somente** o escopo da task.
 - **Verificação por task:** o sub-agente deve compilar (`xcodebuild build`) e rodar os testes unitários do target `MarcoTests` (`xcodebuild test -only-testing:MarcoTests`) antes de reportar conclusão, incluindo o log de resultado no report. Testes de UI (`MarcoUITests`) não fazem parte do escopo — fluxos de UI são verificados pelo `sim-verifier`.
