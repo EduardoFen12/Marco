@@ -42,7 +42,7 @@ Regras derivadas:
 
 **Localização no projeto (desde T20):** `ImportantDate`, `DateType`, `Relationship` e `Persistence` (o `ModelContainer`) moraram em `Marco/Models`/`Marco/Services` até a T19, mas foram movidos para `Shared/` (pasta sincronizada, Xcode 16+) quando o widget (T20) passou a precisar compilar o mesmo código num target separado. `Marco/Models` não existe mais.
 
-**Entidade derivada, só do lado Watch (T21):** `WatchDateSnapshot` (`WatchShared/WatchDateSnapshot.swift`) — `Codable` simples (`id`, `name`, `kind: WatchDateKind`, `nextOccurrence: Date`), **não é um `@Model` SwiftData**. É o formato serializado que o iPhone envia por `WatchConnectivity` (ver 3.7/3.8) e que o Watch persiste localmente; existe porque o Watch não pode abrir o `ModelContainer` do iPhone (App Group não atravessa dispositivos), então carrega só o subconjunto de dados que a lista e a complication precisam, não a entidade completa.
+**Entidade derivada, só do lado Watch (T21):** `WatchDateSnapshot` (`WatchShared/WatchDateSnapshot.swift`) — `Codable` simples (`id`, `name`, `kind: WatchDateKind`, `nextOccurrence: Date`), **não é um `@Model` SwiftData**. É o formato serializado que o iPhone envia por `WatchConnectivity` (ver 3.6/3.7) e que o Watch persiste localmente; existe porque o Watch não pode abrir o `ModelContainer` do iPhone (App Group não atravessa dispositivos), então carrega só o subconjunto de dados que a lista e a complication precisam, não a entidade completa.
 
 ## 3. Funcionalidades
 
@@ -71,16 +71,11 @@ Notas de design:
 - **Nota de aprendizado:** as duas primeiras são read-only (retornam dados existentes), a terceira é write (cria entidade nova com parâmetros). Implementar nessa ordem para sentir os dois padrões.
 - Avaliar App Schemas (assistant schemas) se houver schema aplicável ao domínio; se não houver fit claro, seguir com App Intents "clássicos" e registrar a decisão.
 
-### 3.3 Shortcuts
-
-- **Automation de exemplo: "Resumo da manhã"** — roda todo dia de manhã, chama `UpcomingDatesIntent` e entrega um resumo das datas próximas.
-- Não requer código novo além dos intents; a entrega desta parte é o intent retornar resultado utilizável no Shortcuts (valor de retorno + `IntentResult` com dialog) e um passo-a-passo documentado (`docs/shortcuts-resumo-da-manha.md`) para montar a automation.
-
-### 3.4 Foundation Models (IA on-device)
+### 3.3 Foundation Models (IA on-device)
 
 `AISuggestionService` (`@MainActor`) mantém **uma única `LanguageModelSession`** (criada via `lazy var` a partir de um `SystemLanguageModel` injetável, padrão `.default`) reaproveitada entre chamadas; a instrução varia por `type`/`relationship` no *prompt* de cada operação (mesma sessão, prompt diferente), não em sessões separadas:
 
-- **`suggestGift(notes:relationship:) async -> Result<GiftSuggestion, AISuggestionError>`** — usa `notes` + `relationship` como contexto. **Só é oferecida se `notes` estiver preenchido** (a UI só mostra o botão nessa condição, via `ImportantDateFormView.showsGiftSuggestion(notes:isModelAvailable:)` — o serviço em si não valida isso). Saída estruturada via `@Generable` (`GiftSuggestion`: `title` + `rationale`).
+- **`suggestGift(notes:relationship:) async -> Result<GiftSuggestion, AISuggestionError>`** — usa `notes` + `relationship` como contexto. **Só é oferecida se `notes` estiver preenchido, modelo disponível e `type != .memorial`** (a UI só mostra o botão nessa condição, via `ImportantDateFormView.showsGiftSuggestion(notes:type:isModelAvailable:)` — o serviço em si não valida isso; ver T23). Saída estruturada via `@Generable` (`GiftSuggestion`: `title` + `rationale`).
 - **`personalizedMessage(name:type:relationship:notes:) async -> Result<String, AISuggestionError>`** — texto curto conforme `relationship` (tom carinhoso/engraçado/formal, ver `tone(for:)`) e `type`. Para `type == .memorial`, o mesmo prompt troca para **tom reflexivo** em vez de sugestão de presente — mesma arquitetura, instrução diferente.
 - Construção de prompt isolada em funções `nonisolated static` (`giftPrompt`, `messagePrompt`) — puras, sem tocar a sessão, testáveis diretamente sem `@MainActor` nem modelo real.
 
@@ -90,7 +85,7 @@ Requisitos técnicos:
 - Ambas as operações retornam `Result<T, AISuggestionError>` — **não `throws`**. Indisponibilidade do modelo (`SystemLanguageModel.default.availability`, exposta via `AISuggestionService.availability`/`isAvailable`) e falhas de geração (`LanguageModelSession.GenerationError`, mapeado caso a caso em `domainError(from:)`) são convertidas em `AISuggestionError` (enum com `.unavailable(reason)` e `.generationFailed(String)`) com mensagens em pt-BR (`errorDescription`), para a UI degradar graciosamente (esconder/desabilitar os botões de IA com explicação) sem `try/catch` espalhado pelas views.
 - Saída estruturada via `@Generable` na sugestão de presente; a mensagem personalizada retorna `String` livre.
 
-### 3.5 Importação de datas existentes (Contatos + EventKit)
+### 3.4 Importação de datas existentes (Contatos + EventKit)
 
 Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito** — nada entra automaticamente.
 
@@ -99,23 +94,23 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
 - **Pontos de entrada:** botão no *empty state* da lista e item de menu "Importar…" na toolbar da lista (re-executável). Sem tela de Ajustes dedicada (a hora virou por-data; não há outra config a hospedar).
 - Modelo `ImportCandidate` compartilhado pelas duas fontes alimenta a mesma tela de revisão.
 
-### 3.6 Widget (WidgetKit)
+### 3.5 Widget (WidgetKit)
 
 - Extensão `MarcoWidgets`, embutida no app iOS: widget "próxima data" com contagem regressiva (`NextDateWidget.swift`), famílias **home screen** (`.systemSmall`, `.systemMedium`) e **lock screen** (`.accessoryCircular`, `.accessoryRectangular`, `.accessoryInline`).
-- `NextDateProvider` (`TimelineProvider`) lê o store SwiftData compartilhado (App Group, ver 3.8) via `ModelContext(Persistence.container)` — processo próprio, mesmo arquivo SQLite — e reusa `nextOccurrence`/`daysUntilNextOccurrence` de `ImportantDate` (sem recalcular data). Gera 7 entries diárias, `policy: .after(7 dias à frente)`.
+- `NextDateProvider` (`TimelineProvider`) lê o store SwiftData compartilhado (App Group, ver 3.7) via `ModelContext(Persistence.container)` — processo próprio, mesmo arquivo SQLite — e reusa `nextOccurrence`/`daysUntilNextOccurrence` de `ImportantDate` (sem recalcular data). Gera 7 entries diárias, `policy: .after(7 dias à frente)`.
 - `WidgetCenter.shared.reloadAllTimelines()` é chamado no ponto único de CRUD (`NotificationService.cancel(_:center:)`) para o widget refletir criação/edição/exclusão sem esperar o refresh automático do sistema.
 - Família de lock screen declarada mas não verificada em runtime nesta rodada (limitação de automação do simulador, ver seção 7).
 
-### 3.7 Apple Watch
+### 3.6 Apple Watch
 
 - Target watchOS `MarcoWatch` (app companion, embutido no `Marco`) com lista das próximas datas (`WatchDateListView`), e extensão `MarcoWatchWidgets` (embutida no `MarcoWatch`) com a **complication** de contagem regressiva (`NextDateComplication.swift`, `TimelineProvider`/`Widget`, famílias `.accessoryCircular`/`.accessoryRectangular`/`.accessoryInline`/`.accessoryCorner` — a última exclusiva de watchOS).
-- **Não lê o store compartilhado diretamente** — App Group não atravessa dispositivos físicos (achado do `api-scout` na T21, ver seção 7). Em vez disso, sincroniza via `WatchConnectivity`: o app iOS (`WatchConnectivityService.sync(_:)`) monta um `[WatchDateSnapshot]` a partir de `[ImportantDate]` e envia com `WCSession.default.updateApplicationContext(_:)` — chamado do mesmo ponto único de CRUD do widget (`NotificationService.cancel`). O Watch recebe em `WatchConnectivityReceiver.session(_:didReceiveApplicationContext:)`, persiste em `WatchSnapshotStore` (App Group **próprio do watch**, ver 3.8) e chama `WidgetCenter.shared.reloadAllTimelines()` para atualizar a complication.
+- **Não lê o store compartilhado diretamente** — App Group não atravessa dispositivos físicos (achado do `api-scout` na T21, ver seção 7). Em vez disso, sincroniza via `WatchConnectivity`: o app iOS (`WatchConnectivityService.sync(_:)`) monta um `[WatchDateSnapshot]` a partir de `[ImportantDate]` e envia com `WCSession.default.updateApplicationContext(_:)` — chamado do mesmo ponto único de CRUD do widget (`NotificationService.cancel`). O Watch recebe em `WatchConnectivityReceiver.session(_:didReceiveApplicationContext:)`, persiste em `WatchSnapshotStore` (App Group **próprio do watch**, ver 3.7) e chama `WidgetCenter.shared.reloadAllTimelines()` para atualizar a complication.
 - ClockKit não é usado (deprecated desde watchOS 9 em favor de WidgetKit).
 
-### 3.8 Compartilhamento de dados (App Group)
+### 3.7 Compartilhamento de dados (App Group)
 
-- O `ModelContainer` SwiftData (`Persistence.container`, `Shared/Persistence.swift`) vive num container em **App Group** (`group.Eduardo.Marco`), compartilhado entre o app iOS e a extensão de widget `MarcoWidgets` — ambos no mesmo dispositivo/processo separado, mesmo arquivo SQLite (T19, pré-requisito de 3.6).
-- O par iOS↔watchOS **não** usa esse App Group (containers são por dispositivo, não compartilhados — ver 3.7). O Watch tem seu próprio App Group local (`group.Eduardo.Marco.watch`), compartilhado só entre `MarcoWatch` e `MarcoWatchWidgets`, guardando apenas o snapshot recebido via `WatchConnectivity` (não o `ModelContainer` completo).
+- O `ModelContainer` SwiftData (`Persistence.container`, `Shared/Persistence.swift`) vive num container em **App Group** (`group.Eduardo.Marco`), compartilhado entre o app iOS e a extensão de widget `MarcoWidgets` — ambos no mesmo dispositivo/processo separado, mesmo arquivo SQLite (T19, pré-requisito de 3.5).
+- O par iOS↔watchOS **não** usa esse App Group (containers são por dispositivo, não compartilhados — ver 3.6). O Watch tem seu próprio App Group local (`group.Eduardo.Marco.watch`), compartilhado só entre `MarcoWatch` e `MarcoWatchWidgets`, guardando apenas o snapshot recebido via `WatchConnectivity` (não o `ModelContainer` completo).
 
 ## 4. Stack técnico
 
@@ -186,10 +181,6 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
   Query por período: aniversários do mês corrente.
   *Aceite:* intent retorna somente `type == .birthday` do mês atual. *Depende de:* T5
 
-- [x] **T9 — Shortcut "Resumo da manhã"**
-  Garantir que `UpcomingDatesIntent` retorna valor encadeável no Shortcuts; escrever `docs/shortcuts-resumo-da-manha.md` com o passo-a-passo da automation (trigger diário de manhã → intent → mostrar/falar resumo).
-  *Aceite:* automation montada seguindo o doc funciona no aparelho/simulador. *Depende de:* T5
-
 - [x] **T10 — Foundation Models: serviço de IA**
   `AISuggestionService` com uma `LanguageModelSession`; checagem de disponibilidade; duas operações: sugestão de presente (requer `notes`) e mensagem personalizada (tom por `relationship`/`type`, reflexivo para `.memorial`), com saída estruturada via `@Generable` onde couber.
   *Aceite:* compila no SDK iOS 26; indisponibilidade tratada sem crash; instruções distintas por tipo verificáveis em teste/preview. *Depende de:* T2
@@ -246,6 +237,10 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
   `UNNotificationCategory` com ações "Adiar" (reagenda a curto prazo) e "Abrir para mensagem" (deep-link abre o detalhe da data p/ gerar mensagem via `AISuggestionService`). Delegate trata as ações.
   *Aceite:* notificação exibe as ações; "Adiar" reagenda; abrir leva ao detalhe. *Depende de:* T4, T10
 
+- [x] **T23 — Esconder "Sugerir presente" em datas memorial**
+  Achado no teste manual do checklist (item 6): `ImportantDateFormView.showsGiftSuggestion` só checa `notes`/disponibilidade do modelo, não `type`, então o botão de sugestão de presente aparece também para `type == .memorial` — inconsistente com a mensagem personalizada, que já troca para tom reflexivo nesse caso. Adicionar parâmetro `type: DateType` a `showsGiftSuggestion` e retornar `false` quando `type == .memorial`, independente de `notes`; ajustar o call site em `ImportantDateFormView`.
+  *Aceite:* teste unitário cobrindo `type == .memorial` com `notes` preenchido e modelo disponível retorna `false`; demais casos (T11) continuam passando. *Depende de:* T11
+
 ## 7. Em aberto
 
 - [x] **Tom padrão das mensagens geradas: fixo por `relationship`.** Decidido na T10 (`AISuggestionService.tone(for:)`): `.partner`/`.family` → carinhoso, `.friend` → engraçado, `.colleague`/`.other`/nil → formal. `type == .memorial` sempre sobrepõe para tom reflexivo, independente do `relationship`. Não configurável pelo usuário no MVP.
@@ -258,7 +253,7 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
 
 - **Atenção para T20/T21 — App Group sem `SystemCapabilities` no `project.pbxproj` (achado do `spec-reviewer` na T19):** `Marco/Marco.entitlements` + `CODE_SIGN_ENTITLEMENTS` foram configurados manualmente (editando arquivos), sem passar pela UI "Signing & Capabilities" do Xcode, que normalmente também escreve uma entrada `SystemCapabilities` (`com.apple.ApplicationGroups.iOS`) no `TargetAttributes`. Resultado: em build limpo para Simulador, o binário assinado (`Marco.app.xcent`) sai com entitlements vazias mesmo com `CODE_SIGN_ENTITLEMENTS` apontando certo — mas funciona porque o Simulador não impõe sandboxing sobre entitlements (`containerURL(forSecurityApplicationGroupIdentifier:)` funciona mesmo assim, confirmado em runtime). Em **build de dispositivo real** (necessário para validar Widget/Watch de fato, ou distribuição), essa lacuna provavelmente faz `containerURL` retornar `nil` e disparar o `fatalError` de `Persistence.swift` na inicialização. Antes de verificar T20/T21 em dispositivo físico, adicionar a capability "App Groups" pela UI do Xcode (Signing & Capabilities) para que o `SystemCapabilities`/registro do App Group no Developer Portal seja feito corretamente.
 
-- **T21 — App Group não é compartilhado entre iOS e watchOS (achado do `api-scout`).** A redação de 3.7/3.8 ("app do watch lê o mesmo store compartilhado via App Group") está incorreta para o par iPhone↔Watch: App Groups geram containers **separados por dispositivo** (confirmado na doc oficial da Apple e estruturalmente no simulador: `simctl list pairs` mostra dois UDIDs distintos, cada um com sua própria árvore `Containers/Shared/AppGroup/`). Não há App Group nem iCloud/CloudKit automático entre os dois lados (CloudKit já está fora de escopo do MVP, ver item de brainstorm acima). **Decisão adotada:** sincronizar via `WatchConnectivity` (`WCSession.default.updateApplicationContext(_:)`, entrega o estado mais recente mesmo com os apps fechados) — o iPhone envia um snapshot leve (nome + próxima ocorrência + dias restantes das próximas datas) como `Data` (JSON) dentro do dicionário de contexto; o watch app recebe em `didReceiveApplicationContext`, persiste localmente (App Group **local ao watch**, compartilhado só entre o target do watch app e sua extensão de complication — isso funciona, pois ambos rodam no mesmo processo/dispositivo) e chama `WidgetCenter.shared.reloadAllTimelines()`. ClockKit está deprecated desde watchOS 9 em favor de WidgetKit — complications usam `TimelineProvider`/`Widget` normalmente, igual ao widget iOS da T20, incluindo a família extra `.accessoryCorner` (exclusiva de watchOS).
+- **T21 — App Group não é compartilhado entre iOS e watchOS (achado do `api-scout`).** A redação de 3.6/3.7 ("app do watch lê o mesmo store compartilhado via App Group") está incorreta para o par iPhone↔Watch: App Groups geram containers **separados por dispositivo** (confirmado na doc oficial da Apple e estruturalmente no simulador: `simctl list pairs` mostra dois UDIDs distintos, cada um com sua própria árvore `Containers/Shared/AppGroup/`). Não há App Group nem iCloud/CloudKit automático entre os dois lados (CloudKit já está fora de escopo do MVP, ver item de brainstorm acima). **Decisão adotada:** sincronizar via `WatchConnectivity` (`WCSession.default.updateApplicationContext(_:)`, entrega o estado mais recente mesmo com os apps fechados) — o iPhone envia um snapshot leve (nome + próxima ocorrência + dias restantes das próximas datas) como `Data` (JSON) dentro do dicionário de contexto; o watch app recebe em `didReceiveApplicationContext`, persiste localmente (App Group **local ao watch**, compartilhado só entre o target do watch app e sua extensão de complication — isso funciona, pois ambos rodam no mesmo processo/dispositivo) e chama `WidgetCenter.shared.reloadAllTimelines()`. ClockKit está deprecated desde watchOS 9 em favor de WidgetKit — complications usam `TimelineProvider`/`Widget` normalmente, igual ao widget iOS da T20, incluindo a família extra `.accessoryCorner` (exclusiva de watchOS).
 
 - **T21 — verificado em runtime (par simulador iPhone+Watch); achado de ordering corrigido.** `sim-verifier` confirmou lista no `MarcoWatch` e complication (`.accessoryCircular`, carátula "Modular Compact") mostrando "4 dias" com dado real sincronizado via `WatchConnectivity` — só a família `.accessoryCircular` foi testada visualmente numa carátula (`.accessoryRectangular`/`.accessoryInline`/`.accessoryCorner` ficam com o mesmo código, não testadas individualmente). Durante a revisão, o `spec-reviewer` encontrou que `ImportantDateListView.delete(at:)` chamava `NotificationService.cancel` (que sincroniza widget/Watch) **antes** de `modelContext.delete`, fazendo a data excluída aparecer ainda no widget/Watch até o próximo CRUD — corrigido invertendo a ordem (delete primeiro), com teste que documenta o comportamento de "pending changes" do SwiftData (`ModelContextDeletePendingChangesTests` em `MarcoTests`). Mesma ressalva de `SystemCapabilities`/App Group ausente em dispositivo físico (nota acima) se aplica aos 2 novos targets do watch (`group.Eduardo.Marco.watch`).
 

@@ -120,29 +120,21 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A04598743009743E00EFFE38 /* Marco */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Marco;
 			sourceTree = "<group>";
 		};
 		A04598823009744000EFFE38 /* MarcoTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = MarcoTests;
 			sourceTree = "<group>";
 		};
 		A045988C3009744000EFFE38 /* MarcoUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = MarcoUITests;
 			sourceTree = "<group>";
 		};
 		BD3BEBCB1C4B8CCD66FFEE97 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
@@ -156,15 +148,11 @@
 		};
 		F5F0570936863406515837FE /* MarcoWatch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = MarcoWatch;
 			sourceTree = "<group>";
 		};
 		F7E2C77DB99DDDAE2285EEE2 /* WatchShared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = WatchShared;
 			sourceTree = "<group>";
 		};

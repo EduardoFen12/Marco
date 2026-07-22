@@ -26,7 +26,7 @@ Se o simulador não existir, escolha um disponível via `xcrun simctl list devic
 - `Marco/Views/` — telas SwiftUI
 - `Marco/Services/` — `NotificationService`, `AISuggestionService`
 - `Marco/Intents/` — App Intents, `AppEntity`, `AppShortcutsProvider`
-- `docs/` — documentação de automations do Shortcuts
+- `docs/` — documentação de apoio ao projeto
 
 ## Fluxo de trabalho (SDD)
 

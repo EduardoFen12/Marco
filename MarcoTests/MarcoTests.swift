@@ -364,18 +364,23 @@ struct AISuggestionServicePromptTests {
 
 struct ImportantDateFormViewGiftVisibilityTests {
     // Regra combinada da T11: botão "Sugerir presente" exige modelo disponível E notes preenchidas.
+    // T23: nunca aparece para type == .memorial, independente de notes/modelo.
 
     @Test func escondeQuandoModeloIndisponivelMesmoComNotes() {
-        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "gosta de café", isModelAvailable: false))
+        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "gosta de café", type: .birthday, isModelAvailable: false))
     }
 
     @Test func escondeQuandoNotesVaziaMesmoComModeloDisponivel() {
-        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "   ", isModelAvailable: true))
-        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "", isModelAvailable: true))
+        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "   ", type: .birthday, isModelAvailable: true))
+        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "", type: .birthday, isModelAvailable: true))
     }
 
     @Test func mostraQuandoModeloDisponivelENotesPreenchida() {
-        #expect(ImportantDateFormView.showsGiftSuggestion(notes: "gosta de plantas", isModelAvailable: true))
+        #expect(ImportantDateFormView.showsGiftSuggestion(notes: "gosta de plantas", type: .birthday, isModelAvailable: true))
+    }
+
+    @Test func escondeQuandoTypeMemorialMesmoComNotesEModeloDisponivel() {
+        #expect(!ImportantDateFormView.showsGiftSuggestion(notes: "gosta de plantas", type: .memorial, isModelAvailable: true))
     }
 }
 

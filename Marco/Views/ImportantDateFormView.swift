@@ -55,9 +55,11 @@ struct ImportantDateFormView: View {
     }
 
     /// Regra de visibilidade do botão "Sugerir presente": exige modelo disponível e `notes`
-    /// preenchidas (senão a sugestão fica genérica demais — ver SPEC 3.4).
-    static func showsGiftSuggestion(notes: String, isModelAvailable: Bool) -> Bool {
-        isModelAvailable && !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    /// preenchidas (senão a sugestão fica genérica demais — ver SPEC 3.4). Nunca aparece para
+    /// `type == .memorial` — não faz sentido sugerir presente para uma data de falecimento/homenagem.
+    static func showsGiftSuggestion(notes: String, type: DateType, isModelAvailable: Bool) -> Bool {
+        guard type != .memorial else { return false }
+        return isModelAvailable && !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     /// Componentes de hora/minuto extraídos de `time`, prontos para gravar em
@@ -148,7 +150,7 @@ struct ImportantDateFormView: View {
 
             Section("Sugestões de IA") {
                 if aiService.isAvailable {
-                    if Self.showsGiftSuggestion(notes: notes, isModelAvailable: aiService.isAvailable) {
+                    if Self.showsGiftSuggestion(notes: notes, type: type, isModelAvailable: aiService.isAvailable) {
                         Button {
                             Task { await suggestGift() }
                         } label: {
