@@ -54,6 +54,13 @@ struct ImportCandidatesReviewView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancelar") { dismiss() }
                 }
+                if !isLoading && !newCandidates.isEmpty {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(allEligibleSelected ? "Desmarcar todos" : "Selecionar todos") {
+                            toggleSelectAll()
+                        }
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Importar") { importSelected() }
                         .disabled(isLoading || selectedIDs.isEmpty)
@@ -103,6 +110,15 @@ struct ImportCandidatesReviewView: View {
         } else {
             selectedIDs.insert(candidate.id)
         }
+    }
+
+    /// Todos os candidatos elegíveis (já dedupados) estão marcados agora?
+    private var allEligibleSelected: Bool {
+        !newCandidates.isEmpty && selectedIDs.count == newCandidates.count
+    }
+
+    private func toggleSelectAll() {
+        selectedIDs = allEligibleSelected ? [] : Set(newCandidates.map(\.id))
     }
 
     private func loadCandidates() async {
