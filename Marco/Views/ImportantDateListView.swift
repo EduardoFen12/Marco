@@ -84,8 +84,11 @@ struct ImportantDateListView: View {
     private func delete(at offsets: IndexSet) {
         for index in offsets {
             let importantDate = sortedDates[index]
-            NotificationService.cancel(importantDate)
+            // Deleta primeiro: `cancel` dispara `syncWatch`, que refaz o fetch de todas as
+            // `ImportantDate` pro widget/Watch — precisa que o item já esteja fora do contexto
+            // nesse fetch, senão widget/Watch mostram a data recém-excluída até o próximo CRUD.
             modelContext.delete(importantDate)
+            NotificationService.cancel(importantDate)
         }
     }
 

@@ -20,6 +20,7 @@ struct MarcoApp: App {
         // Guardado como propriedade (não local) — `UNUserNotificationCenter.delegate` é `weak`.
         notificationDelegate = NotificationDelegate(coordinator: coordinator)
         UNUserNotificationCenter.current().delegate = notificationDelegate
+        WatchConnectivityService.shared.activate()
     }
 
     var body: some Scene {

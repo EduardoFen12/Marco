@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftData
 import UserNotifications
 import WidgetKit
 
@@ -126,9 +127,21 @@ enum NotificationService {
 
     /// Cancela as 3 notificações pendentes de uma `ImportantDate` (chamado na criação/edição, via
     /// `schedule`, e na exclusão). Ponto único por onde todo CRUD passa, por isso também é aqui
-    /// que avisamos o widget (T20) para recarregar sua timeline.
+    /// que avisamos o widget (T20) para recarregar sua timeline e o Watch (T21) para receber o
+    /// snapshot atualizado.
     static func cancel(_ importantDate: ImportantDate, center: UNUserNotificationCenter = .current()) {
         center.removePendingNotificationRequests(withIdentifiers: identifiers(for: importantDate))
         WidgetCenter.shared.reloadAllTimelines()
+        syncWatch(from: importantDate)
+    }
+
+    /// Reconstrói o snapshot pro Watch a partir do mesmo `ModelContext` da data que disparou o
+    /// CRUD (`PersistentModel.modelContext`) — sem precisar passar o contexto por todo o app só
+    /// pra isso. `nil` (ex: objeto já desanexado do contexto) apenas pula o envio dessa vez; o
+    /// próximo CRUD sincroniza de novo.
+    private static func syncWatch(from importantDate: ImportantDate) {
+        guard let modelContext = importantDate.modelContext,
+              let allDates = try? modelContext.fetch(FetchDescriptor<ImportantDate>()) else { return }
+        WatchConnectivityService.shared.sync(allDates)
     }
 }

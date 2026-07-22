@@ -7,7 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		150F67CC68B0A7A916CB7F33 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57A1D182D45F4DED37A1182D /* Foundation.framework */; };
 		17052294EC251342FB485044 /* MarcoWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C30284134B0FDAAF6B5EED98 /* MarcoWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4468B48D1D885722629C0F16 /* MarcoWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = FFB85AE73A24A13D9543C421 /* MarcoWatch.app */; };
+		730EFC7E64DB41611EBD4CFE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57A1D182D45F4DED37A1182D /* Foundation.framework */; };
+		C4FFA43E8655230E7C671895 /* MarcoWatchWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 0357F6AED103807837CC0C75 /* MarcoWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F7F5340095B635640E7C1727 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDC161A3A9EBCC8E78FAD893 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
@@ -18,6 +22,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 1C29563ECBE6C8E8F0733308;
 			remoteInfo = MarcoWidgets;
+		};
+		8242C15594037C448AFDA752 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A045986A3009743E00EFFE38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FAD74E70F041587EDF61C815;
+			remoteInfo = MarcoWatchWidgets;
 		};
 		A04598803009744000EFFE38 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -33,9 +44,27 @@
 			remoteGlobalIDString = A04598713009743E00EFFE38;
 			remoteInfo = Marco;
 		};
+		DAE825AFB67E99E041C46E56 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A045986A3009743E00EFFE38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 773F5A95A0236383AEDD1BF5;
+			remoteInfo = MarcoWatch;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		33B38DDA8C68370077766786 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				4468B48D1D885722629C0F16 /* MarcoWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		513A498E76D1F48ECD19038C /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -47,17 +76,38 @@
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		58D3319B0D6161F10CB20017 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C4FFA43E8655230E7C671895 /* MarcoWatchWidgets.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0357F6AED103807837CC0C75 /* MarcoWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MarcoWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		57A1D182D45F4DED37A1182D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		A04598723009743E00EFFE38 /* Marco.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marco.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A045987F3009744000EFFE38 /* MarcoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarcoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A04598893009744000EFFE38 /* MarcoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarcoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C30284134B0FDAAF6B5EED98 /* MarcoWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MarcoWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		FDC161A3A9EBCC8E78FAD893 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		FFB85AE73A24A13D9543C421 /* MarcoWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MarcoWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5CFF7B93DFB86D47559C6E47 /* Exceptions for "MarcoWatchWidgets" folder in "MarcoWatchWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FAD74E70F041587EDF61C815 /* MarcoWatchWidgets */;
+		};
 		928DEE2F0BE9FDDFBABC5C2F /* Exceptions for "MarcoWidgets" folder in "MarcoWidgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -70,22 +120,52 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A04598743009743E00EFFE38 /* Marco */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = Marco;
 			sourceTree = "<group>";
 		};
 		A04598823009744000EFFE38 /* MarcoTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = MarcoTests;
 			sourceTree = "<group>";
 		};
 		A045988C3009744000EFFE38 /* MarcoUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = MarcoUITests;
 			sourceTree = "<group>";
 		};
 		BD3BEBCB1C4B8CCD66FFEE97 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		E1D5E8241774ACE22E53B677 /* MarcoWatchWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5CFF7B93DFB86D47559C6E47 /* Exceptions for "MarcoWatchWidgets" folder in "MarcoWatchWidgets" target */,
+			);
+			path = MarcoWatchWidgets;
+			sourceTree = "<group>";
+		};
+		F5F0570936863406515837FE /* MarcoWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = MarcoWatch;
+			sourceTree = "<group>";
+		};
+		F7E2C77DB99DDDAE2285EEE2 /* WatchShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = WatchShared;
 			sourceTree = "<group>";
 		};
 		FD3DE665EA1C386053AA8933 /* MarcoWidgets */ = {
@@ -99,6 +179,14 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		84DAE8A08E7C13B3FD78CDDA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				150F67CC68B0A7A916CB7F33 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A045986F3009743E00EFFE38 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -128,6 +216,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E1F9D66F3B6E9928D5506F4B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				730EFC7E64DB41611EBD4CFE /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -141,6 +237,9 @@
 				FD3DE665EA1C386053AA8933 /* MarcoWidgets */,
 				A04598733009743E00EFFE38 /* Products */,
 				A6E2D098C741BED3049ABCE4 /* Frameworks */,
+				F7E2C77DB99DDDAE2285EEE2 /* WatchShared */,
+				F5F0570936863406515837FE /* MarcoWatch */,
+				E1D5E8241774ACE22E53B677 /* MarcoWatchWidgets */,
 			);
 			sourceTree = "<group>";
 		};
@@ -151,6 +250,8 @@
 				A045987F3009744000EFFE38 /* MarcoTests.xctest */,
 				A04598893009744000EFFE38 /* MarcoUITests.xctest */,
 				C30284134B0FDAAF6B5EED98 /* MarcoWidgets.appex */,
+				FFB85AE73A24A13D9543C421 /* MarcoWatch.app */,
+				0357F6AED103807837CC0C75 /* MarcoWatchWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -159,6 +260,7 @@
 			isa = PBXGroup;
 			children = (
 				AC2A6FC41606FFFA19F7E96E /* iOS */,
+				D2FCC03A5B94397E76AD996C /* watchOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -169,6 +271,14 @@
 				FDC161A3A9EBCC8E78FAD893 /* Foundation.framework */,
 			);
 			name = iOS;
+			sourceTree = "<group>";
+		};
+		D2FCC03A5B94397E76AD996C /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				57A1D182D45F4DED37A1182D /* Foundation.framework */,
+			);
+			name = watchOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -195,6 +305,29 @@
 			productReference = C30284134B0FDAAF6B5EED98 /* MarcoWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		773F5A95A0236383AEDD1BF5 /* MarcoWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AF7E960A9A00A6B3186C9E2 /* Build configuration list for PBXNativeTarget "MarcoWatch" */;
+			buildPhases = (
+				151BA31F9F9257AC239CE448 /* Sources */,
+				E1F9D66F3B6E9928D5506F4B /* Frameworks */,
+				F40A0747C15DFC109E89319A /* Resources */,
+				58D3319B0D6161F10CB20017 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A837081AF3D7055FE5B3755B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F5F0570936863406515837FE /* MarcoWatch */,
+				F7E2C77DB99DDDAE2285EEE2 /* WatchShared */,
+			);
+			name = MarcoWatch;
+			productName = MarcoWatch;
+			productReference = FFB85AE73A24A13D9543C421 /* MarcoWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 		A04598713009743E00EFFE38 /* Marco */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A04598933009744000EFFE38 /* Build configuration list for PBXNativeTarget "Marco" */;
@@ -203,15 +336,18 @@
 				A045986F3009743E00EFFE38 /* Frameworks */,
 				A04598703009743E00EFFE38 /* Resources */,
 				513A498E76D1F48ECD19038C /* Embed App Extensions */,
+				33B38DDA8C68370077766786 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				8B73F242AFB181C1EE509BDF /* PBXTargetDependency */,
+				6B6FF2D9C918E0CDF98A3720 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A04598743009743E00EFFE38 /* Marco */,
 				BD3BEBCB1C4B8CCD66FFEE97 /* Shared */,
+				F7E2C77DB99DDDAE2285EEE2 /* WatchShared */,
 			);
 			name = Marco;
 			productName = Marco;
@@ -260,6 +396,27 @@
 			productReference = A04598893009744000EFFE38 /* MarcoUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		FAD74E70F041587EDF61C815 /* MarcoWatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0FADE8D669D0AFA0F023B5F /* Build configuration list for PBXNativeTarget "MarcoWatchWidgets" */;
+			buildPhases = (
+				A37C3E691BD1E39BD0650C0A /* Sources */,
+				84DAE8A08E7C13B3FD78CDDA /* Frameworks */,
+				6B12009B24E0071CE5BFE0F0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E1D5E8241774ACE22E53B677 /* MarcoWatchWidgets */,
+				F7E2C77DB99DDDAE2285EEE2 /* WatchShared */,
+			);
+			name = MarcoWatchWidgets;
+			productName = MarcoWatchWidgets;
+			productReference = 0357F6AED103807837CC0C75 /* MarcoWatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -304,11 +461,20 @@
 				A045987E3009744000EFFE38 /* MarcoTests */,
 				A04598883009744000EFFE38 /* MarcoUITests */,
 				1C29563ECBE6C8E8F0733308 /* MarcoWidgets */,
+				773F5A95A0236383AEDD1BF5 /* MarcoWatch */,
+				FAD74E70F041587EDF61C815 /* MarcoWatchWidgets */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		6B12009B24E0071CE5BFE0F0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		85A2720B9358583C3D24FE55 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -337,9 +503,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F40A0747C15DFC109E89319A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		151BA31F9F9257AC239CE448 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A045986E3009743E00EFFE38 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -361,6 +541,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A37C3E691BD1E39BD0650C0A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D13F16B2ED0FC1DD73E08327 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -371,6 +558,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		6B6FF2D9C918E0CDF98A3720 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MarcoWatch;
+			target = 773F5A95A0236383AEDD1BF5 /* MarcoWatch */;
+			targetProxy = DAE825AFB67E99E041C46E56 /* PBXContainerItemProxy */;
+		};
 		8B73F242AFB181C1EE509BDF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = MarcoWidgets;
@@ -386,6 +579,12 @@
 			isa = PBXTargetDependency;
 			target = A04598713009743E00EFFE38 /* Marco */;
 			targetProxy = A045988A3009744000EFFE38 /* PBXContainerItemProxy */;
+		};
+		A837081AF3D7055FE5B3755B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MarcoWatchWidgets;
+			target = FAD74E70F041587EDF61C815 /* MarcoWatchWidgets */;
+			targetProxy = 8242C15594037C448AFDA752 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -452,6 +651,38 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
+		};
+		96A94E4969A376D225A33DF1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = MarcoWatchWidgets/MarcoWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J63SH8A52R;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MarcoWatchWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MarcoWatchWidgets;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.Marco.watchkitapp.MarcoWatchWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.4;
+			};
+			name = Release;
 		};
 		A04598913009744000EFFE38 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -728,9 +959,116 @@
 			};
 			name = Release;
 		};
+		BE655138C7F44F3AE0916825 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = MarcoWatchWidgets/MarcoWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J63SH8A52R;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MarcoWatchWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MarcoWatchWidgets;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.Marco.watchkitapp.MarcoWatchWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.4;
+			};
+			name = Debug;
+		};
+		C53869CFEB6AA77957B501C1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MarcoWatch/MarcoWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J63SH8A52R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Marco;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = Eduardo.Marco;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.Marco.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.4;
+			};
+			name = Release;
+		};
+		EF7573F7487EB968DF600D30 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MarcoWatch/MarcoWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J63SH8A52R;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Marco;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = Eduardo.Marco;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.Marco.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.4;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4AF7E960A9A00A6B3186C9E2 /* Build configuration list for PBXNativeTarget "MarcoWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C53869CFEB6AA77957B501C1 /* Release */,
+				EF7573F7487EB968DF600D30 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		837C5A4A623D2ACFCA635640 /* Build configuration list for PBXNativeTarget "MarcoWidgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -772,6 +1110,15 @@
 			buildConfigurations = (
 				A045989A3009744000EFFE38 /* Debug */,
 				A045989B3009744000EFFE38 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C0FADE8D669D0AFA0F023B5F /* Build configuration list for PBXNativeTarget "MarcoWatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				96A94E4969A376D225A33DF1 /* Release */,
+				BE655138C7F44F3AE0916825 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

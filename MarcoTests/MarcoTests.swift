@@ -8,6 +8,7 @@
 import Testing
 import Foundation
 import AppIntents
+import SwiftData
 @testable import Marco
 
 struct ImportantDateNextOccurrenceTests {
@@ -538,6 +539,35 @@ struct EventKitImportServiceCandidateTests {
     }
 }
 
+struct WatchDateSnapshotTests {
+    // T21: contagem regressiva calculada na exibição (não no envio), pra continuar andando no
+    // Watch entre sincronizações do iPhone.
+    let calendar = Calendar(identifier: .gregorian)
+
+    private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    @Test func daysUntilCalculaDiferencaEmDias() {
+        let snapshot = WatchDateSnapshot(
+            id: UUID(), name: "Mari", kind: .birthday, nextOccurrence: date(2026, 5, 31)
+        )
+
+        #expect(snapshot.daysUntil(from: date(2026, 5, 24), calendar: calendar) == 7)
+        #expect(snapshot.daysUntil(from: date(2026, 5, 31), calendar: calendar) == 0)
+    }
+
+    @Test func daysUntilLabelUsaHojeAmanhaOuFaltamDias() {
+        let snapshot = WatchDateSnapshot(
+            id: UUID(), name: "Mari", kind: .birthday, nextOccurrence: date(2026, 5, 31)
+        )
+
+        #expect(snapshot.daysUntilLabel(from: date(2026, 5, 31), calendar: calendar) == "Hoje")
+        #expect(snapshot.daysUntilLabel(from: date(2026, 5, 30), calendar: calendar) == "Amanhã")
+        #expect(snapshot.daysUntilLabel(from: date(2026, 5, 24), calendar: calendar) == "Faltam 7 dias")
+    }
+}
+
 struct ImportCandidatesReviewViewDeduplicateTests {
     // T18: dedupe entre candidatos e `ImportantDate` já salvas — mesmo nome (case/espaço
     // insensitive) e mesmo dia/mês. Lógica pura, sem tocar SwiftData/Contacts/EventKit.
@@ -581,5 +611,26 @@ struct ImportCandidatesReviewViewDeduplicateTests {
         let result = ImportCandidatesReviewView.deduplicate([candidate], against: [existing], calendar: calendar)
 
         #expect(result.count == 1)
+    }
+}
+
+struct ModelContextDeletePendingChangesTests {
+    // Documenta o comportamento do qual `ImportantDateListView.delete(at:)` depende (correção de
+    // ordem: delete antes de `NotificationService.cancel`, que refaz um fetch pro widget/Watch):
+    // um `fetch` no mesmo `ModelContext`, feito logo após `context.delete(objeto)` e ANTES de
+    // qualquer `save()` explícito, já exclui esse objeto do resultado.
+    @Test func fetchLogoAposDeleteJaExcluiObjetoAntesDeSave() throws {
+        let container = try ModelContainer(
+            for: ImportantDate.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = ModelContext(container)
+        let importantDate = ImportantDate(name: "Mari", date: Date(), type: .birthday)
+        context.insert(importantDate)
+        try context.save()
+
+        context.delete(importantDate)
+        let datesAfterDelete = try context.fetch(FetchDescriptor<ImportantDate>())
+
+        #expect(datesAfterDelete.isEmpty)
     }
 }
