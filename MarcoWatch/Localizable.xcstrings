@@ -1,0 +1,66 @@
+{
+  "sourceLanguage": "pt-BR",
+  "strings": {
+    "Abra o Marco no iPhone para sincronizar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Marco on iPhone to sync."
+          }
+        }
+      }
+    },
+    "Amanhã": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
+    "Datas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dates"
+          }
+        }
+      }
+    },
+    "Faltam %lld dias": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days left"
+          }
+        }
+      }
+    },
+    "Hoje": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "Nenhuma data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No dates"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.1"
+}

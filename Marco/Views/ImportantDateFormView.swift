@@ -239,9 +239,10 @@ struct ImportantDateFormView: View {
 
     private var unavailableExplanation: String {
         if case .unavailable(let reason) = aiService.availability {
-            return AISuggestionError.unavailable(reason).errorDescription ?? "Sugestões de IA indisponíveis neste momento."
+            return AISuggestionError.unavailable(reason).errorDescription
+                ?? String(localized: "Sugestões de IA indisponíveis neste momento.")
         }
-        return "Sugestões de IA indisponíveis neste momento."
+        return String(localized: "Sugestões de IA indisponíveis neste momento.")
     }
 
     private func suggestGift() async {
@@ -268,7 +269,7 @@ struct ImportantDateFormView: View {
         case .success(let value):
             AIResultCard(text: text(value))
         case .failure(let error):
-            Text(error.errorDescription ?? "Não foi possível gerar o conteúdo.")
+            Text(error.errorDescription ?? String(localized: "Não foi possível gerar o conteúdo."))
                 .font(.footnote)
                 .foregroundStyle(.red)
         case .none:

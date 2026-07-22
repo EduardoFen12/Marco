@@ -23,11 +23,13 @@ enum NotificationLayer: String, CaseIterable {
         }
     }
 
+    /// `UNMutableNotificationContent.body` é `String` puro (não localiza sozinho mesmo com
+    /// String Catalog) — `String(localized:)` explícito extrai a chave e traduz.
     var body: String {
         switch self {
-        case .week: return "Falta 1 semana"
-        case .day: return "Falta 1 dia"
-        case .onDay: return "É hoje!"
+        case .week: return String(localized: "Falta 1 semana")
+        case .day: return String(localized: "Falta 1 dia")
+        case .onDay: return String(localized: "É hoje!")
         }
     }
 }
@@ -55,9 +57,15 @@ enum NotificationService {
     /// Registra a categoria com as ações de notificação interativa. `setNotificationCategories`
     /// apenas substitui o conjunto (não duplica), então é seguro chamar a cada `schedule`.
     static func registerCategories(center: UNUserNotificationCenter = .current()) {
-        let snooze = UNNotificationAction(identifier: snoozeActionIdentifier, title: "Adiar", options: [])
+        // `UNNotificationAction.title` é `String` puro — `String(localized:)` explícito (ver nota
+        // em `NotificationLayer.body`).
+        let snooze = UNNotificationAction(
+            identifier: snoozeActionIdentifier, title: String(localized: "Adiar"), options: []
+        )
         let openMessage = UNNotificationAction(
-            identifier: openMessageActionIdentifier, title: "Abrir para mensagem", options: [.foreground]
+            identifier: openMessageActionIdentifier,
+            title: String(localized: "Abrir para mensagem"),
+            options: [.foreground]
         )
         let category = UNNotificationCategory(
             identifier: categoryIdentifier, actions: [snooze, openMessage], intentIdentifiers: [], options: []

@@ -1,0 +1,96 @@
+{
+  "sourceLanguage": "pt-BR",
+  "strings": {
+    "Adicionar data no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a date in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Aniversários do mês no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Birthdays this month in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Datas chegando no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dates coming up in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Mostrar próximas datas no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show upcoming dates in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Nova data importante no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New important date in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Quais datas estão chegando no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What dates are coming up in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Quanto falta para ${date} no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How long until ${date} in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Quantos dias faltam para ${date} no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How many days until ${date} in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Quem faz aniversário esse mês no ${applicationName}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who has a birthday this month in ${applicationName}"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.1"
+}

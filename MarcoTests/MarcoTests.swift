@@ -157,7 +157,11 @@ struct ImportantDateNextOccurrenceTests {
 
 struct ImportantDateAgeLabelTests {
     @Test func ageLabelComIdade() {
-        #expect(ImportantDate.ageLabel(forAge: 30) == "Faz 30 anos")
+        // `LocalizedStringResource` compara pela chave de interpolação (ex: "Faz %lld anos"),
+        // não pelo texto já resolvido — o literal de comparação precisa da mesma interpolação
+        // (não "Faz 30 anos" fixo) para gerar a mesma chave.
+        let age = 30
+        #expect(ImportantDate.ageLabel(forAge: 30) == "Faz \(age) anos")
     }
 
     @Test func ageLabelSemIdade() {
@@ -567,9 +571,13 @@ struct WatchDateSnapshotTests {
             id: UUID(), name: "Mari", kind: .birthday, nextOccurrence: date(2026, 5, 31)
         )
 
+        let sevenDays = 7
         #expect(snapshot.daysUntilLabel(from: date(2026, 5, 31), calendar: calendar) == "Hoje")
         #expect(snapshot.daysUntilLabel(from: date(2026, 5, 30), calendar: calendar) == "Amanhã")
-        #expect(snapshot.daysUntilLabel(from: date(2026, 5, 24), calendar: calendar) == "Faltam 7 dias")
+        // `LocalizedStringResource` compara pela chave de interpolação (ex: "Faltam %lld dias"),
+        // não pelo texto já resolvido — por isso o literal de comparação precisa da mesma
+        // interpolação (não "Faltam 7 dias" fixo) para gerar a mesma chave.
+        #expect(snapshot.daysUntilLabel(from: date(2026, 5, 24), calendar: calendar) == "Faltam \(sevenDays) dias")
     }
 }
 

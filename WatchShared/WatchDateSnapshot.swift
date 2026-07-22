@@ -44,8 +44,10 @@ struct WatchDateSnapshot: Codable, Identifiable, Equatable {
         return calendar.dateComponents([.day], from: startOfToday, to: startOfOccurrence).day ?? 0
     }
 
-    /// Texto "Faltam N dias" em pt-BR, reaproveitado pela lista e pela complication.
-    func daysUntilLabel(from referenceDate: Date = .now, calendar: Calendar = .current) -> String {
+    /// Texto "Faltam N dias", reaproveitado pela lista do Watch. Tipado como
+    /// `LocalizedStringResource` (não `String`) para que cada caso vire sua própria chave de
+    /// localização — mesmo padrão de `ImportantDateEntity.subtitleText`.
+    func daysUntilLabel(from referenceDate: Date = .now, calendar: Calendar = .current) -> LocalizedStringResource {
         switch daysUntil(from: referenceDate, calendar: calendar) {
         case 0: return "Hoje"
         case 1: return "Amanhã"

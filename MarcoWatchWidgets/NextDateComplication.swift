@@ -21,11 +21,13 @@ struct NextDateComplicationProvider: TimelineProvider {
     private static let daysAhead = 7
 
     func placeholder(in context: Context) -> NextDateComplicationEntry {
-        NextDateComplicationEntry(date: .now, name: "Aniversário da Mari", daysUntil: 3)
+        NextDateComplicationEntry(date: .now, name: String(localized: "Aniversário da Mari"), daysUntil: 3)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NextDateComplicationEntry) -> Void) {
-        completion(NextDateComplicationEntry(date: .now, name: "Aniversário da Mari", daysUntil: 3))
+        completion(
+            NextDateComplicationEntry(date: .now, name: String(localized: "Aniversário da Mari"), daysUntil: 3)
+        )
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<NextDateComplicationEntry>) -> Void) {
@@ -58,8 +60,10 @@ struct NextDateComplicationView: View {
     @Environment(\.widgetFamily) private var family
     let entry: NextDateComplicationEntry
 
-    private var daysLabel: String {
-        guard entry.name != nil else { return "" }
+    /// `nil` quando não há data próxima (`entry.name == nil`) — mesmo padrão de
+    /// `NextDateWidgetView.daysLabel` (T20).
+    private var daysLabel: LocalizedStringResource? {
+        guard entry.name != nil else { return nil }
         switch entry.daysUntil {
         case 0: return "É hoje!"
         case 1: return "Falta 1 dia"
@@ -98,15 +102,23 @@ struct NextDateComplicationView: View {
             Text(entry.name ?? "Nenhuma data")
                 .font(.headline)
                 .lineLimit(1)
-            Text(daysLabel.isEmpty ? "—" : daysLabel)
+            Text(daysLabel ?? "—")
                 .font(.caption)
         }
         .containerBackground(.clear, for: .widget)
     }
 
+    /// Concatena `Text`s (nome + rótulo) em vez de compor um `String` — mesmo racional de
+    /// `NextDateWidgetView.inline` (T20).
     private var inline: some View {
-        Text(entry.name.map { "\($0): \(daysLabel)" } ?? "Nenhuma data próxima")
-            .containerBackground(.clear, for: .widget)
+        Group {
+            if let name = entry.name, let daysLabel {
+                Text(name) + Text(": ") + Text(daysLabel)
+            } else {
+                Text("Nenhuma data próxima")
+            }
+        }
+        .containerBackground(.clear, for: .widget)
     }
 
     private var corner: some View {

@@ -22,11 +22,13 @@ struct NextDateProvider: TimelineProvider {
     private static let daysAhead = 7
 
     func placeholder(in context: Context) -> NextDateEntry {
-        NextDateEntry(date: .now, name: "Aniversário da Mari", type: .birthday, daysUntil: 3)
+        NextDateEntry(date: .now, name: String(localized: "Aniversário da Mari"), type: .birthday, daysUntil: 3)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NextDateEntry) -> Void) {
-        completion(NextDateEntry(date: .now, name: "Aniversário da Mari", type: .birthday, daysUntil: 3))
+        completion(
+            NextDateEntry(date: .now, name: String(localized: "Aniversário da Mari"), type: .birthday, daysUntil: 3)
+        )
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<NextDateEntry>) -> Void) {
@@ -88,8 +90,11 @@ struct NextDateWidgetView: View {
         }
     }
 
-    private var daysLabel: String {
-        guard entry.name != nil else { return "" }
+    /// `nil` quando não há data próxima (`entry.name == nil`) — tipado como
+    /// `LocalizedStringResource` (não `String`) para que cada caso vire sua própria chave de
+    /// localização, mesmo padrão de `ImportantDateEntity.subtitleText`.
+    private var daysLabel: LocalizedStringResource? {
+        guard entry.name != nil else { return nil }
         switch entry.daysUntil {
         case 0: return "É hoje!"
         case 1: return "Falta 1 dia"
@@ -104,7 +109,7 @@ struct NextDateWidgetView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            if let name = entry.name {
+            if let name = entry.name, let daysLabel {
                 Text(name)
                     .font(.headline)
                     .lineLimit(2)
@@ -144,16 +149,24 @@ struct NextDateWidgetView: View {
                 Text(entry.name ?? "Nenhuma data")
                     .font(.headline)
                     .lineLimit(1)
-                Text(daysLabel.isEmpty ? "—" : daysLabel)
+                Text(daysLabel ?? "—")
                     .font(.caption)
             }
         }
         .containerBackground(.clear, for: .widget)
     }
 
+    /// Concatena `Text`s (nome + rótulo) em vez de compor um `String` — o nome não deve ser
+    /// localizado, mas o rótulo de dias sim; `Text + Text` mantém ambos os pedaços corretos.
     private var inline: some View {
-        Text(entry.name.map { "\($0): \(daysLabel)" } ?? "Nenhuma data próxima")
-            .containerBackground(.clear, for: .widget)
+        Group {
+            if let name = entry.name, let daysLabel {
+                Text(name) + Text(": ") + Text(daysLabel)
+            } else {
+                Text("Nenhuma data próxima")
+            }
+        }
+        .containerBackground(.clear, for: .widget)
     }
 }
 

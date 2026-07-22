@@ -1,0 +1,106 @@
+{
+  "sourceLanguage": "pt-BR",
+  "strings": {
+    "Amanhã": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
+    "Aniversário da Mari": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mari's Birthday"
+          }
+        }
+      }
+    },
+    "Contagem regressiva para a próxima data importante.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Countdown to your next important date."
+          }
+        }
+      }
+    },
+    "Falta 1 dia": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 day left"
+          }
+        }
+      }
+    },
+    "Faltam %lld dias": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days left"
+          }
+        }
+      }
+    },
+    "Hoje": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "Nenhuma data próxima": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No upcoming date"
+          }
+        }
+      }
+    },
+    "Próxima data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next Date"
+          }
+        }
+      }
+    },
+    "dias": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "days"
+          }
+        }
+      }
+    },
+    "É hoje!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's today!"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.1"
+}

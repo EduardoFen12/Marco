@@ -74,7 +74,7 @@ struct ImportCandidatesReviewView: View {
                     .foregroundStyle(selectedIDs.contains(candidate.id) ? Color.accentColor : Color.secondary)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(candidate.name)
-                    Text(dateLabel(for: candidate))
+                    dateLabel(for: candidate)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -83,12 +83,18 @@ struct ImportCandidatesReviewView: View {
         .buttonStyle(.plain)
     }
 
-    private func dateLabel(for candidate: ImportCandidate) -> String {
+    /// `Text` (não `String`/`LocalizedStringResource`) construído diretamente na chamada — só
+    /// assim o literal "de" entre a data formatada e o ano é reconhecido e extraído pelo Xcode
+    /// (uma `LocalizedStringResource` composta por duas interpolações arriscaria colidir com
+    /// outra chave genérica de mesmo formato "%@ ... %lld").
+    @ViewBuilder
+    private func dateLabel(for candidate: ImportCandidate) -> some View {
         let formatted = candidate.date.formatted(.dateTime.day().month(.wide))
         if let birthYear = candidate.birthYear {
-            return "\(formatted) de \(birthYear)"
+            Text("\(formatted) de \(birthYear)")
+        } else {
+            Text(formatted)
         }
-        return formatted
     }
 
     private func toggle(_ candidate: ImportCandidate) {
@@ -150,7 +156,7 @@ struct ImportCandidatesReviewView: View {
 }
 
 private extension ImportSource {
-    var displayName: String {
+    var displayName: LocalizedStringResource {
         switch self {
         case .contacts: return "Contatos"
         case .calendar: return "Calendário"

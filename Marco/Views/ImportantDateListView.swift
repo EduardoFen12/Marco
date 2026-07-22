@@ -130,8 +130,10 @@ private struct ImportantDateRow: View {
 // MARK: - Rótulos em pt-BR
 
 extension ImportantDate {
-    /// Texto amigável de "quanto falta" até a próxima ocorrência.
-    var daysRemainingLabel: String {
+    /// Texto amigável de "quanto falta" até a próxima ocorrência. Tipado como
+    /// `LocalizedStringResource` (não `String`) para que cada caso vire sua própria chave de
+    /// localização — ver mesmo padrão/justificativa em `ImportantDateEntity.subtitleText`.
+    var daysRemainingLabel: LocalizedStringResource {
         switch daysUntilNextOccurrence() {
         case 0: return "Hoje"
         case 1: return "Amanhã"
@@ -141,14 +143,14 @@ extension ImportantDate {
 
     /// Texto "faz N anos" a partir de uma idade já calculada (ver `age(on:calendar:)`);
     /// `nil` quando não há idade (sem `birthYear`), caso em que nada deve ser exibido.
-    static func ageLabel(forAge age: Int?) -> String? {
+    static func ageLabel(forAge age: Int?) -> LocalizedStringResource? {
         guard let age else { return nil }
         return "Faz \(age) anos"
     }
 }
 
 extension DateType {
-    var displayName: String {
+    var displayName: LocalizedStringResource {
         switch self {
         case .birthday: return "Aniversário"
         case .commemorative: return "Comemorativa"
@@ -158,7 +160,7 @@ extension DateType {
 }
 
 extension Relationship {
-    var displayName: String {
+    var displayName: LocalizedStringResource {
         switch self {
         case .partner: return "Cônjuge/Parceiro(a)"
         case .family: return "Família"
