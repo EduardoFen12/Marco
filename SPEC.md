@@ -59,15 +59,15 @@ Regras derivadas:
 
 | Intent | Tipo | Exemplo de frase |
 |---|---|---|
-| `UpcomingDatesIntent` | Query | "Quais datas estão chegando?" |
-| `DaysUntilDateIntent` | Query com parâmetro | "Quanto falta pro aniversário da Mari?" |
-| `AddImportantDateIntent` | Criação/escrita | "Adiciona o aniversário da Mari, 31 de maio" |
-| `BirthdaysThisMonthIntent` (bônus) | Query por período | "Quem faz aniversário esse mês?" |
+| `UpcomingDatesIntent` | Query | "Quais datas estão chegando no Marco" |
+| `DaysUntilDateIntent` | Query com parâmetro | "Quanto falta para o aniversário da Mari no Marco" |
+| `AddImportantDateIntent` | Criação/escrita | "Adicionar data no Marco" (aciona o intent; nome/data são preenchidos por prompt de parâmetro, não reconhecidos junto na mesma frase) |
+| `BirthdaysThisMonthIntent` (bônus) | Query por período | "Quem faz aniversário esse mês no Marco" |
 
 Notas de design:
 
 - `ImportantDate` exposta como `AppEntity` (com `EntityQuery`) para o parâmetro de `DaysUntilDateIntent`.
-- Frases registradas via `AppShortcutsProvider` para invocação por voz sem setup manual.
+- Frases registradas via `AppShortcutsProvider` para invocação por voz sem setup manual. **Toda frase precisa citar `\(.applicationName)` ("no Marco") explicitamente** — sem o nome do app na fala, a Siri não desambigua o pedido do domínio genérico do sistema (Calendário/Lembretes) e não chama o intent do Marco; ver achado registrado na seção 7.
 - **Nota de aprendizado:** as duas primeiras são read-only (retornam dados existentes), a terceira é write (cria entidade nova com parâmetros). Implementar nessa ordem para sentir os dois padrões.
 - Avaliar App Schemas (assistant schemas) se houver schema aplicável ao domínio; se não houver fit claro, seguir com App Intents "clássicos" e registrar a decisão.
 
@@ -241,8 +241,17 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
   Achado no teste manual do checklist (item 6): `ImportantDateFormView.showsGiftSuggestion` só checa `notes`/disponibilidade do modelo, não `type`, então o botão de sugestão de presente aparece também para `type == .memorial` — inconsistente com a mensagem personalizada, que já troca para tom reflexivo nesse caso. Adicionar parâmetro `type: DateType` a `showsGiftSuggestion` e retornar `false` quando `type == .memorial`, independente de `notes`; ajustar o call site em `ImportantDateFormView`.
   *Aceite:* teste unitário cobrindo `type == .memorial` com `notes` preenchido e modelo disponível retorna `false`; demais casos (T11) continuam passando. *Depende de:* T11
 
+- [ ] **T24 — Localização: inglês + português**
+  App hoje é 100% pt-BR hardcoded (strings literais nas views, dialogs de intent, conteúdo de notificação, widget e app do Watch). Migrar para String Catalog (`.xcstrings`, Xcode 15+) com localizações pt-BR (padrão/development region) e inglês, cobrindo todas as superfícies user-facing: `Marco/Views/`, dialogs/`IntentDialog` em `Marco/Intents/`, texto de notificação em `NotificationService`, `MarcoWidgets`, `MarcoWatch`/`MarcoWatchWidgets`. Rodar `api-scout` antes, dado o escopo amplo tocando praticamente todo arquivo com string visível.
+  *Aceite:* app compila e roda corretamente com o idioma do dispositivo em Português (Brasil) e em English, sem string hardcoded remanescente nas superfícies listadas; comportamento pt-BR atual preservado como default. *Depende de:* T22
+
+- [ ] **T25 — Selecionar todos na tela de importação**
+  Na tela de revisão de importação (T18, sheet com candidatos de Contatos/EventKit), adicionar um toggle "Selecionar todos" / "Desmarcar todos" que marca/desmarca de uma vez todos os candidatos elegíveis (candidatos já dedupados/ocultos como já importados não são afetados).
+  *Aceite:* tocar o toggle marca todos os candidatos visíveis; tocar de novo desmarca todos; importar após "Selecionar todos" cria uma `ImportantDate` para cada candidato marcado, igual ao fluxo de seleção manual. *Depende de:* T18
+
 ## 7. Em aberto
 
+- [x] **Achado no teste manual — Siri não invocava os App Intents do Marco (falso "bug", causa era a documentação).** Investigado via `api-scout`: `MarcoShortcuts.swift` já registra corretamente `\(.applicationName)` em toda frase (framework `AppShortcutsProvider` exige isso para a Siri desambiguar do domínio genérico do sistema — Calendário/Lembretes — comportamento documentado da Apple, não bug do Marco). A causa raiz era a própria SPEC (seção 3.2): a tabela de frases de exemplo omitia "no Marco", então testar com essas frases literalmente cai no domínio do sistema. Tabela corrigida. Causas secundárias a descartar se o problema persistir mesmo dizendo a frase com "no Marco": (1) frases parametrizadas (`DaysUntilDateIntent`) têm tolerância a variação mais baixa e podem falhar por voz mesmo com a frase certa — testar via toque no atalho no app Atalhos para isolar; (2) Ajustes → Siri e Busca → Marco → toggle "Usar com Perguntar à Siri" desligado; (3) Ajustes → Siri e Busca → Idioma do Siri diferente de Português (Brasil); (4) índice de App Shortcuts do sistema não atualizado logo após instalar via Xcode — testar de novo após alguns minutos, ou via Xcode → Product → App Shortcuts Preview para isolar do device físico.
 - [x] **Tom padrão das mensagens geradas: fixo por `relationship`.** Decidido na T10 (`AISuggestionService.tone(for:)`): `.partner`/`.family` → carinhoso, `.friend` → engraçado, `.colleague`/`.other`/nil → formal. `type == .memorial` sempre sobrepõe para tom reflexivo, independente do `relationship`. Não configurável pelo usuário no MVP.
 - [ ] Limite de datas antes de precisar de paginação/busca na UI (decidir se surgir necessidade; fora do MVP por ora)
 - [ ] **Ideias brainstormadas, não priorizadas (Fase 2):** sincronização multi-dispositivo via iCloud/CloudKit; Live Activity para datas iminentes (contagem no dia); foto por pessoa; busca/filtro na lista (relacionado ao item de paginação acima). Promover a task se/quando o usuário pedir.

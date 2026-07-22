@@ -39,11 +39,13 @@ Marque `[x]` conforme for validando no aparelho físico.
 
 ## 5. Siri / App Intents (T5–T8)
 
-- [] Perguntar à Siri "Quais datas estão chegando?" — responde com as datas reais do banco
-- [] Perguntar "Quanto falta pro aniversário de [nome]?" — resolve a entidade certa e responde os dias corretos
+> Toda frase precisa citar **"no Marco"** explicitamente — sem o nome do app, a Siri roteia para o domínio genérico do sistema (Calendário/Lembretes) em vez do intent do Marco. Se mesmo assim não funcionar: checar Ajustes → Siri e Busca → Marco → "Usar com Perguntar à Siri" ligado, Ajustes → Siri e Busca → Idioma = Português (Brasil), e tentar de novo depois de alguns minutos (índice do sistema pode não ter atualizado logo após instalar via Xcode).
+
+- [] Perguntar à Siri "Quais datas estão chegando no Marco" — responde com as datas reais do banco
+- [] Perguntar "Quanto falta para o aniversário de [nome] no Marco?" — resolve a entidade certa e responde os dias corretos (frase parametrizada é a mais frágil por voz — se falhar, testar tocando o atalho direto no app Atalhos pra isolar se é a Siri ou o intent)
 - [] Testar com nome ambíguo/inexistente — não crasha, dá resposta sensata
-- [] Pedir "Adiciona o aniversário de [nome], [data]" — cria a data e ela aparece na lista do app depois
-- [] Perguntar "Quem faz aniversário esse mês?" — retorna só aniversários (não comemorativas/memoriais) do mês corrente
+- [] Pedir "Adicionar data no Marco" — completa nome/data via prompt de parâmetro, cria a data e ela aparece na lista do app depois
+- [] Perguntar "Quem faz aniversário esse mês no Marco?" — retorna só aniversários (não comemorativas/memoriais) do mês corrente
 - [] Abrir o app Atalhos → aba Galeria/App → os 4 intents do Marco aparecem para montar automations
 
 ## 6. Foundation Models / sugestões de IA (T10, T11)
