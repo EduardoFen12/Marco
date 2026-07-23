@@ -29,6 +29,8 @@ Entidade central: `ImportantDate` (SwiftData `@Model`).
 | `birthYear` | `Int?` | ano de nascimento (opcional; só p/ `type == .birthday`) — habilita cálculo de idade (T13) |
 | `notificationHour` | `Int` | hora do lembrete desta data (default 9); vale para as 3 camadas (T13) |
 | `notificationMinute` | `Int` | minuto do lembrete desta data (default 0) (T13) |
+| `eventHour` | `Int?` | hora em que o evento em si acontece (ex: aniversário às 19h); opcional, `nil` = evento sem hora definida (default) — distinto de `notificationHour`, que só controla o lembrete (T26) |
+| `eventMinute` | `Int?` | minuto do evento em si; opcional, junto com `eventHour` (T26) |
 | `createdAt` | `Date` | housekeeping |
 
 Regras derivadas:
@@ -248,6 +250,10 @@ Importa datas que o usuário já tem no aparelho, **sempre por opt-in explícito
 - [x] **T25 — Selecionar todos na tela de importação**
   Na tela de revisão de importação (T18, sheet com candidatos de Contatos/EventKit), adicionar um toggle "Selecionar todos" / "Desmarcar todos" que marca/desmarca de uma vez todos os candidatos elegíveis (candidatos já dedupados/ocultos como já importados não são afetados).
   *Aceite:* tocar o toggle marca todos os candidatos visíveis; tocar de novo desmarca todos; importar após "Selecionar todos" cria uma `ImportantDate` para cada candidato marcado, igual ao fluxo de seleção manual. *Depende de:* T18
+
+- [x] **T26 — Modelo + UI: hora do evento**
+  Em `ImportantDate`: novos campos opcionais `eventHour: Int?`/`eventMinute: Int?` — a hora em que o evento em si acontece (ex: aniversário às 19h), distinta de `notificationHour`/`notificationMinute` (T13), que continuam controlando só a hora do lembrete. `nil` em ambos = evento sem hora definida (comportamento atual, preservado como default). Em `ImportantDateFormView`: UI para definir opcionalmente a hora do evento (ex: toggle + `DatePicker(.hourAndMinute)` condicional). Exibir a hora, quando definida, na lista (`ImportantDateRow`) junto da data/dias restantes. Migração SwiftData leve (campos opcionais, default `nil`, sem afetar dados existentes).
+  *Aceite:* criar/editar uma data com hora definida persiste `eventHour`/`eventMinute` e a lista passa a exibir "às HH:mm"; deixar sem hora mantém `nil` e a exibição atual inalterada; store existente migra sem quebrar; `notificationHour`/`notificationMinute` seguem controlando só os triggers de notificação, sem serem afetados por este campo. *Depende de:* T13
 
 ## 7. Em aberto
 

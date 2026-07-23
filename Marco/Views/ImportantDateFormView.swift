@@ -26,6 +26,8 @@ struct ImportantDateFormView: View {
     @State private var notes: String
     @State private var birthYearText: String
     @State private var notificationTime: Date
+    @State private var hasEventTime: Bool
+    @State private var eventTime: Date
 
     @State private var isSuggestingGift = false
     @State private var giftResult: Result<GiftSuggestion, AISuggestionError>?
@@ -48,6 +50,10 @@ struct ImportantDateFormView: View {
             hour: importantDate?.notificationHour ?? 9,
             minute: importantDate?.notificationMinute ?? 0
         ))
+        let eventHour = importantDate?.eventHour
+        let eventMinute = importantDate?.eventMinute
+        _hasEventTime = State(initialValue: eventHour != nil && eventMinute != nil)
+        _eventTime = State(initialValue: Self.time(hour: eventHour ?? 12, minute: eventMinute ?? 0))
     }
 
     private var isNameValid: Bool {
@@ -132,6 +138,10 @@ struct ImportantDateFormView: View {
                     }
                 }
                 DatePicker("Hora do lembrete", selection: $notificationTime, displayedComponents: .hourAndMinute)
+                Toggle("Definir hora do evento", isOn: $hasEventTime)
+                if hasEventTime {
+                    DatePicker("Hora do evento", selection: $eventTime, displayedComponents: .hourAndMinute)
+                }
             }
 
             Section("Relacionamento") {
@@ -205,6 +215,9 @@ struct ImportantDateFormView: View {
         let finalDate = type == .birthday ? Self.birthdayDate(month: birthdayMonth, day: birthdayDay) : date
         let finalBirthYear = type == .birthday ? Self.parseBirthYear(birthYearText) : nil
         let (hour, minute) = Self.timeComponents(from: notificationTime)
+        let (eventHour, eventMinute): (Int?, Int?) = hasEventTime
+            ? { let (h, m) = Self.timeComponents(from: eventTime); return (h, m) }()
+            : (nil, nil)
 
         let savedDate: ImportantDate
         if let importantDate {
@@ -216,6 +229,8 @@ struct ImportantDateFormView: View {
             importantDate.birthYear = finalBirthYear
             importantDate.notificationHour = hour
             importantDate.notificationMinute = minute
+            importantDate.eventHour = eventHour
+            importantDate.eventMinute = eventMinute
             savedDate = importantDate
         } else {
             let newDate = ImportantDate(
@@ -226,7 +241,9 @@ struct ImportantDateFormView: View {
                 notes: trimmedNotes.isEmpty ? nil : trimmedNotes,
                 birthYear: finalBirthYear,
                 notificationHour: hour,
-                notificationMinute: minute
+                notificationMinute: minute,
+                eventHour: eventHour,
+                eventMinute: eventMinute
             )
             modelContext.insert(newDate)
             savedDate = newDate

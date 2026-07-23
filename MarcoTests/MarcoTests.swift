@@ -167,6 +167,18 @@ struct ImportantDateAgeLabelTests {
     @Test func ageLabelSemIdade() {
         #expect(ImportantDate.ageLabel(forAge: nil) == nil)
     }
+
+    @Test func eventTimeLabelNilSemHoraDefinida() {
+        let importantDate = ImportantDate(name: "Sem hora", date: .now, type: .commemorative)
+        #expect(importantDate.eventTimeLabel == nil)
+    }
+
+    @Test func eventTimeLabelFormataComZeroPadding() {
+        let importantDate = ImportantDate(
+            name: "Com hora", date: .now, type: .commemorative, eventHour: 9, eventMinute: 5
+        )
+        #expect(importantDate.eventTimeLabel == "às \("09:05")")
+    }
 }
 
 struct ImportantDateEntityTests {

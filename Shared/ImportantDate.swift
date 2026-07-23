@@ -21,6 +21,12 @@ final class ImportantDate {
     /// Novos campos com default — lightweight migration do SwiftData para stores existentes.
     var notificationHour: Int = 9
     var notificationMinute: Int = 0
+    /// Hora/minuto em que o evento em si acontece (ex: aniversário às 19h) — distinto de
+    /// `notificationHour`/`notificationMinute`, que só controlam o lembrete. `nil` em ambos
+    /// (default) = evento sem hora definida, comportamento preservado. Campos opcionais novos,
+    /// default `nil` — lightweight migration do SwiftData para stores existentes.
+    var eventHour: Int?
+    var eventMinute: Int?
     var createdAt: Date
 
     init(
@@ -33,6 +39,8 @@ final class ImportantDate {
         birthYear: Int? = nil,
         notificationHour: Int = 9,
         notificationMinute: Int = 0,
+        eventHour: Int? = nil,
+        eventMinute: Int? = nil,
         createdAt: Date = .now
     ) {
         self.id = id
@@ -44,6 +52,8 @@ final class ImportantDate {
         self.birthYear = birthYear
         self.notificationHour = notificationHour
         self.notificationMinute = notificationMinute
+        self.eventHour = eventHour
+        self.eventMinute = eventMinute
         self.createdAt = createdAt
     }
 }

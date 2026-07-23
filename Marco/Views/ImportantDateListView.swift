@@ -120,9 +120,16 @@ private struct ImportantDateRow: View {
                 }
             }
             Spacer()
-            Text(importantDate.daysRemainingLabel)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(importantDate.daysRemainingLabel)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                if let eventTimeLabel = importantDate.eventTimeLabel {
+                    Text(eventTimeLabel)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 }
@@ -146,6 +153,14 @@ extension ImportantDate {
     static func ageLabel(forAge age: Int?) -> LocalizedStringResource? {
         guard let age else { return nil }
         return "Faz \(age) anos"
+    }
+
+    /// Texto "às HH:mm" a partir de `eventHour`/`eventMinute`; `nil` quando o evento não tem
+    /// hora definida (comportamento atual preservado, ver T26).
+    var eventTimeLabel: LocalizedStringResource? {
+        guard let eventHour, let eventMinute else { return nil }
+        let formattedTime = String(format: "%02d:%02d", eventHour, eventMinute)
+        return "às \(formattedTime)"
     }
 }
 
