@@ -24,3 +24,4 @@ playground.xcworkspace
 
 # Claude Code (local overrides only; agents/skills are versioned)
 .claude/settings.local.json
+.claude/worktrees/
