@@ -7,14 +7,17 @@ import SwiftUI
 import SwiftData
 import UIKit
 import PhotosUI
-import FoundationModels
 
 /// Tela de criação/edição de uma `ImportantDate`. Passe `importantDate: nil` para criar
 /// uma nova data ou a instância existente para editá-la.
+///
+/// Redesenho T35: campos agrupados em cards por seção (`FormSectionCard`, label flutuante),
+/// sem `Form`/`List` nativos. As sugestões de IA (T11/T23) migraram para
+/// `ImportantDateDetailView` (T32) — este form não faz mais nenhuma chamada ao
+/// `AISuggestionService`.
 struct ImportantDateFormView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @State private var aiService = AISuggestionService()
 
     private let importantDate: ImportantDate?
 
@@ -31,11 +34,6 @@ struct ImportantDateFormView: View {
     @State private var eventTime: Date
     @State private var photoData: Data?
     @State private var photoPickerItem: PhotosPickerItem?
-
-    @State private var isSuggestingGift = false
-    @State private var giftResult: Result<GiftSuggestion, AISuggestionError>?
-    @State private var isGeneratingMessage = false
-    @State private var messageResult: Result<String, AISuggestionError>?
 
     init(importantDate: ImportantDate?) {
         self.importantDate = importantDate
@@ -64,9 +62,12 @@ struct ImportantDateFormView: View {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// Regra de visibilidade do botão "Sugerir presente": exige modelo disponível e `notes`
-    /// preenchidas (senão a sugestão fica genérica demais — ver SPEC 3.4). Nunca aparece para
-    /// `type == .memorial` — não faz sentido sugerir presente para uma data de falecimento/homenagem.
+    /// Regra de visibilidade do botão "Sugerir presente" em `ImportantDateDetailView` (T32):
+    /// exige modelo disponível e `notes` preenchidas (senão a sugestão fica genérica demais —
+    /// ver SPEC 3.4). Nunca aparece para `type == .memorial` — não faz sentido sugerir presente
+    /// para uma data de falecimento/homenagem. Continua morando aqui (e `static`) porque nasceu
+    /// junto com o form (T23); movida de call site na T35, mas a função em si segue reaproveitada
+    /// pelo Detalhe.
     static func showsGiftSuggestion(notes: String, type: DateType, isModelAvailable: Bool) -> Bool {
         guard type != .memorial else { return false }
         return isModelAvailable && !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -129,10 +130,21 @@ struct ImportantDateFormView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            photoHeader
-            formContent
+        ScrollView {
+            VStack(spacing: 20) {
+                photoHeader
+                identificationCard
+                whenCard
+                remindersCard
+                categoryCard
+                relationshipCard
+                notesCard
+                saveButton
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 24)
         }
+        .background(Color("MarcoCream").ignoresSafeArea())
         .navigationTitle(importantDate == nil ? "Nova data" : "Editar data")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -142,8 +154,13 @@ struct ImportantDateFormView: View {
                 }
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Salvar") { save() }
-                    .disabled(!isNameValid)
+                Button {
+                    save()
+                } label: {
+                    Image(systemName: "checkmark")
+                }
+                .disabled(!isNameValid)
+                .accessibilityLabel(Text("Salvar"))
             }
         }
         .onChange(of: photoPickerItem) { _, newItem in
@@ -164,17 +181,17 @@ struct ImportantDateFormView: View {
                 } else {
                     ZStack {
                         RoundedRectangle(cornerRadius: 32)
-                            .fill(Color(.secondarySystemBackground))
+                            .fill(Color("MarcoCardFill"))
                         RoundedRectangle(cornerRadius: 32)
                             .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(Color("MarcoLabelSecondary").opacity(0.4))
                         VStack(spacing: 8) {
                             Image(systemName: "photo.badge.plus")
                                 .font(.title)
                             Text("Adicionar foto")
                                 .font(.subheadline)
                         }
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color("MarcoLabelSecondary"))
                     }
                 }
             }
@@ -184,7 +201,6 @@ struct ImportantDateFormView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(photoData == nil ? Text("Adicionar foto") : Text("Trocar foto"))
-        .padding(.horizontal)
         .padding(.top, 8)
     }
 
@@ -196,16 +212,25 @@ struct ImportantDateFormView: View {
         photoData = Self.compressedPhotoData(from: uiImage)
     }
 
-    private var formContent: some View {
-        Form {
-            Section("Informações") {
-                if let ageLabel = ImportantDate.ageLabel(forAge: importantDate?.age()) {
-                    Text(ageLabel)
-                        .foregroundStyle(.secondary)
-                }
-                TextField("Nome", text: $name)
+    // MARK: - Cards
+
+    private var identificationCard: some View {
+        FormSectionCard(label: "Identificação") {
+            TextField("Nome", text: $name)
+                .textFieldStyle(.plain)
+                .padding(12)
+                .background(Color("MarcoCream"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    /// Mantém a lógica atual (T14): seletor completo de data para não-aniversário, dia/mês +
+    /// ano opcional (com idade calculada) para aniversário.
+    private var whenCard: some View {
+        FormSectionCard(label: "Quando") {
+            VStack(alignment: .leading, spacing: 12) {
                 if type == .birthday {
-                    HStack {
+                    HStack(spacing: 12) {
                         Picker("Mês", selection: $birthdayMonth) {
                             ForEach(Array(Calendar.current.monthSymbols.enumerated()), id: \.offset) { index, symbol in
                                 Text(symbol.capitalized).tag(index + 1)
@@ -217,79 +242,100 @@ struct ImportantDateFormView: View {
                             }
                         }
                     }
+                    .pickerStyle(.menu)
                     .onChange(of: birthdayMonth) {
                         let validDays = Self.daysInBirthdayMonth(birthdayMonth)
                         if !validDays.contains(birthdayDay) {
                             birthdayDay = validDays.last ?? 1
                         }
                     }
+
                     TextField("Ano de nascimento (opcional)", text: $birthYearText)
                         .keyboardType(.numberPad)
+                        .textFieldStyle(.plain)
+                        .padding(12)
+                        .background(Color("MarcoCream"))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    if let ageLabel = ImportantDate.ageLabel(forAge: importantDate?.age()) {
+                        Text(ageLabel)
+                            .font(.footnote)
+                            .foregroundStyle(Color("MarcoLabelSecondary"))
+                    }
                 } else {
                     DatePicker("Data", selection: $date, displayedComponents: .date)
                 }
-                Picker("Tipo", selection: $type) {
-                    ForEach(DateType.allCases, id: \.self) { type in
-                        Text(type.displayName).tag(type)
-                    }
-                }
+            }
+        }
+    }
+
+    /// Horário do lembrete (T13) + toggle "Definir hora do evento" (T26) — ambos preservados.
+    private var remindersCard: some View {
+        FormSectionCard(label: "Lembretes") {
+            VStack(alignment: .leading, spacing: 12) {
                 DatePicker("Hora do lembrete", selection: $notificationTime, displayedComponents: .hourAndMinute)
                 Toggle("Definir hora do evento", isOn: $hasEventTime)
                 if hasEventTime {
                     DatePicker("Hora do evento", selection: $eventTime, displayedComponents: .hourAndMinute)
                 }
             }
+        }
+    }
 
-            Section("Relacionamento") {
-                Picker("Relacionamento", selection: $relationship) {
-                    Text("Nenhum").tag(Relationship?.none)
-                    ForEach(Relationship.allCases, id: \.self) { relationship in
-                        Text(relationship.displayName).tag(Relationship?.some(relationship))
-                    }
+    private var categoryCard: some View {
+        FormSectionCard(label: "Categoria") {
+            Picker("Tipo", selection: $type) {
+                ForEach(DateType.allCases, id: \.self) { type in
+                    Text(type.displayName).tag(type)
                 }
             }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+        }
+    }
 
-            Section("Notas") {
-                TextField("Notas (opcional)", text: $notes, axis: .vertical)
-                    .lineLimit(3...6)
-            }
-
-            Section("Sugestões de IA") {
-                if aiService.isAvailable {
-                    if Self.showsGiftSuggestion(notes: notes, type: type, isModelAvailable: aiService.isAvailable) {
-                        Button {
-                            Task { await suggestGift() }
-                        } label: {
-                            if isSuggestingGift {
-                                ProgressView()
-                            } else {
-                                Label("Sugerir presente", systemImage: "gift")
-                            }
-                        }
-                        .disabled(isSuggestingGift)
-
-                        aiResultView(for: giftResult) { "\($0.title)\n\n\($0.rationale)" }
+    private var relationshipCard: some View {
+        FormSectionCard(label: "Relacionamento") {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    RelationshipChip(title: "Nenhum", isSelected: relationship == nil) {
+                        relationship = nil
                     }
-
-                    Button {
-                        Task { await generateMessage() }
-                    } label: {
-                        if isGeneratingMessage {
-                            ProgressView()
-                        } else {
-                            Label("Gerar mensagem", systemImage: "text.bubble")
+                    ForEach(Relationship.allCases, id: \.self) { option in
+                        RelationshipChip(title: option.displayName, isSelected: relationship == option) {
+                            relationship = option
                         }
                     }
-                    .disabled(isGeneratingMessage)
-
-                    aiResultView(for: messageResult) { $0 }
-                } else {
-                    Text(unavailableExplanation)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
                 }
             }
         }
+    }
+
+    private var notesCard: some View {
+        FormSectionCard(label: "Anotações") {
+            TextField("Notas (opcional)", text: $notes, axis: .vertical)
+                .lineLimit(4...8)
+                .textFieldStyle(.plain)
+                .padding(12)
+                .background(Color("MarcoCream"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    /// Botão "Salvar" do rodapé (T35) — mesma ação do `checkmark` do toolbar.
+    private var saveButton: some View {
+        Button {
+            save()
+        } label: {
+            Text("Salvar")
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Color("MarcosGreen"))
+        .disabled(!isNameValid)
+        .padding(.top, 4)
     }
 
     private func save() {
@@ -336,67 +382,46 @@ struct ImportantDateFormView: View {
         Task { await NotificationService.schedule(savedDate) }
         dismiss()
     }
+}
 
-    // MARK: - Sugestões de IA
+/// Card de seção com label flutuante (T35): título pequeno em maiúsculas no topo do card,
+/// conteúdo livre abaixo — usado por todas as seções do form ("Identificação", "Quando",
+/// "Lembretes", "Categoria", "Relacionamento", "Anotações").
+private struct FormSectionCard<Content: View>: View {
+    let label: LocalizedStringResource
+    @ViewBuilder var content: Content
 
-    private var unavailableExplanation: String {
-        if case .unavailable(let reason) = aiService.availability {
-            return AISuggestionError.unavailable(reason).errorDescription
-                ?? String(localized: "Sugestões de IA indisponíveis neste momento.")
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(label)
+                .font(.caption.bold())
+                .textCase(.uppercase)
+                .foregroundStyle(Color("MarcoLabelSecondary"))
+            content
         }
-        return String(localized: "Sugestões de IA indisponíveis neste momento.")
-    }
-
-    private func suggestGift() async {
-        isSuggestingGift = true
-        giftResult = await aiService.suggestGift(notes: notes, relationship: relationship)
-        isSuggestingGift = false
-    }
-
-    private func generateMessage() async {
-        isGeneratingMessage = true
-        let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        messageResult = await aiService.personalizedMessage(
-            name: name,
-            type: type,
-            relationship: relationship,
-            notes: trimmedNotes.isEmpty ? nil : trimmedNotes
-        )
-        isGeneratingMessage = false
-    }
-
-    @ViewBuilder
-    private func aiResultView<T>(for result: Result<T, AISuggestionError>?, text: (T) -> String) -> some View {
-        switch result {
-        case .success(let value):
-            AIResultCard(text: text(value))
-        case .failure(let error):
-            Text(error.errorDescription ?? String(localized: "Não foi possível gerar o conteúdo."))
-                .font(.footnote)
-                .foregroundStyle(.red)
-        case .none:
-            EmptyView()
-        }
+        .padding(16)
+        .background(Color("MarcoCardFill"))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
 
-/// Exibe o texto gerado pela IA com opção de copiar para a área de transferência.
-private struct AIResultCard: View {
-    let text: String
+/// Chip selecionável de `Relationship` (T35), incl. a opção "Nenhum" — substitui o `Picker`
+/// antigo por uma fileira de cápsulas roláveis horizontalmente.
+private struct RelationshipChip: View {
+    let title: LocalizedStringResource
+    let isSelected: Bool
+    let action: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(text)
-                .font(.callout)
-            Button {
-                UIPasteboard.general.string = text
-            } label: {
-                Label("Copiar", systemImage: "doc.on.doc")
-            }
-            .font(.footnote)
-            .buttonStyle(.borderless)
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Capsule().fill(isSelected ? Color("MarcosGreen") : Color("MarcoBeige")))
+                .foregroundStyle(isSelected ? Color.white : Color("MarcoLabel"))
         }
-        .padding(.vertical, 4)
+        .buttonStyle(.plain)
     }
 }
 
