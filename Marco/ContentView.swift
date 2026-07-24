@@ -14,7 +14,7 @@ struct ContentView: View {
             Tab("Datas", systemImage: "list.bullet") {
                 ImportantDateListView()
             }
-            Tab("Buscar", systemImage: "magnifyingglass") {
+            Tab("Buscar", systemImage: "magnifyingglass", role: .search) {
                 SearchDatesView()
             }
         }

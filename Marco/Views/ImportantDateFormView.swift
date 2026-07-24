@@ -166,6 +166,10 @@ struct ImportantDateFormView: View {
         .onChange(of: photoPickerItem) { _, newItem in
             Task { await loadPickedPhoto(newItem) }
         }
+        // Empurrada a partir do Detalhe ao editar (T36, mock Figma): esconde a tab bar. Quando
+        // esta view é a "Nova Data" aberta via sheet (`ImportantDateListView`), o modificador é
+        // inofensivo — a tab bar já fica coberta pela apresentação modal, sem depender dele.
+        .toolbar(.hidden, for: .tabBar)
     }
 
     /// Banner de foto (T31): ~192pt de altura, cantos com radius 32. Sem foto, mostra um estado
