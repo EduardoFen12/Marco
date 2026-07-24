@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "pt-BR",
   "strings" : {
+    " · " : {
+
+    },
     "%@" : {
 
     },
@@ -67,16 +70,6 @@
         }
       }
     },
-    "Adicionar foto" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add photo"
-          }
-        }
-      }
-    },
     "Adicionar ${name} (${type}) em ${date}" : {
       "localizations" : {
         "en" : {
@@ -103,6 +96,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add Important Date"
+          }
+        }
+      }
+    },
+    "Adicionar foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add photo"
           }
         }
       }
@@ -327,16 +330,6 @@
         }
       }
     },
-    "DESTAQUE" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "FEATURED"
-          }
-        }
-      }
-    },
     "Definir hora do evento" : {
       "localizations" : {
         "en" : {
@@ -349,6 +342,16 @@
     },
     "Desmarcar todos" : {
 
+    },
+    "DESTAQUE" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FEATURED"
+          }
+        }
+      }
     },
     "Dia" : {
       "localizations" : {
@@ -873,22 +876,22 @@
         }
       }
     },
-    "Trocar foto" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change photo"
-          }
-        }
-      }
-    },
     "Toque em + para adicionar uma data importante." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tap + to add an important date."
+          }
+        }
+      }
+    },
+    "Trocar foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change photo"
           }
         }
       }

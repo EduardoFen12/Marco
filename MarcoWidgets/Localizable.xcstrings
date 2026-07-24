@@ -1,126 +1,135 @@
 {
-  "sourceLanguage": "pt-BR",
-  "strings": {
-    "Aniversário": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Birthday"
+  "sourceLanguage" : "pt-BR",
+  "strings" : {
+    "—" : {
+
+    },
+    ": " : {
+
+    },
+    "%lld" : {
+
+    },
+    "Aniversário" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Birthday"
           }
         }
       }
     },
-    "Aniversário da Mari": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mari's Birthday"
+    "Aniversário da Mari" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mari's Birthday"
           }
         }
       }
     },
-    "Comemorativa": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Commemorative"
+    "Comemorativa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commemorative"
           }
         }
       }
     },
-    "Contagem regressiva para a próxima data importante.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Countdown to your next important date."
+    "Contagem regressiva para a próxima data importante." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Countdown to your next important date."
           }
         }
       }
     },
-    "Falta 1 dia": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1 day left"
+    "dias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "days"
           }
         }
       }
     },
-    "Faltam %lld dias": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld days left"
+    "É hoje!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It's today!"
           }
         }
       }
     },
-    "Memorial": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Memorial"
+    "Falta 1 dia" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 day left"
           }
         }
       }
     },
-    "Nenhuma data próxima": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No upcoming date"
+    "Faltam %lld dias" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld days left"
           }
         }
       }
     },
-    "Próxima data": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Next Date"
+    "Memorial" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memorial"
           }
         }
       }
     },
-    "Tipo de data": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Date type"
+    "Nenhuma data próxima" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No upcoming date"
           }
         }
       }
     },
-    "dias": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "days"
+    "Próxima data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next Date"
           }
         }
       }
     },
-    "É hoje!": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "It's today!"
+    "Tipo de data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date type"
           }
         }
       }
     }
   },
-  "version": "1.1"
+  "version" : "1.1"
 }
