@@ -198,9 +198,13 @@ private struct FeaturedDateCard: View {
     @ViewBuilder
     private var background: some View {
         if let photoData = importantDate.photoData, let uiImage = UIImage(data: photoData) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
+            Color.clear
+                .overlay {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                }
+                .clipped()
         } else {
             ZStack {
                 Color("MarcoDarkGreen")
