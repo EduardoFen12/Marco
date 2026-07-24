@@ -157,6 +157,16 @@
         }
       }
     },
+    "Anotações" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes"
+          }
+        }
+      }
+    },
     "às %@" : {
       "localizations" : {
         "en" : {
@@ -380,6 +390,16 @@
         }
       }
     },
+    "Editar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
     "Editar data" : {
       "localizations" : {
         "en" : {
@@ -526,6 +546,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Information"
+          }
+        }
+      }
+    },
+    "Lembretes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminders"
           }
         }
       }

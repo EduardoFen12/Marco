@@ -7,7 +7,7 @@ import SwiftUI
 import SwiftData
 
 /// Aba "Buscar" (T27): busca por nome sobre as mesmas `ImportantDate` da lista principal
-/// (`@Query`, sem entidade/store nova). Tocar um resultado abre o mesmo formulário de edição,
+/// (`@Query`, sem entidade/store nova). Tocar um resultado abre o Detalhe da data (T32),
 /// reaproveitando o padrão `navigationDestination(for: UUID.self)` de `ImportantDateListView`.
 struct SearchDatesView: View {
     @Query private var importantDates: [ImportantDate]
@@ -27,7 +27,7 @@ struct SearchDatesView: View {
             }
             .navigationDestination(for: UUID.self) { id in
                 if let importantDate = importantDates.first(where: { $0.id == id }) {
-                    ImportantDateFormView(importantDate: importantDate)
+                    ImportantDateDetailView(importantDate: importantDate)
                 }
             }
             .overlay {
