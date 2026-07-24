@@ -7,7 +7,7 @@ App iOS de datas importantes (aniversários, comemorativas, memoriais) com notif
 ## Plataforma e stack
 
 - iOS 26+ (mínimo para Foundation Models e App Intents atuais)
-- SwiftUI + SwiftData + UserNotifications + AppIntents + FoundationModels
+- SwiftUI + SwiftData + UserNotifications + AppIntents + FoundationModels + PhotosUI (foto por data, Fase 3)
 - Testes: Swift Testing no target `MarcoTests` (unitários). Testes de UI (`MarcoUITests`) estão **fora de escopo** — verificação de fluxos de UI fica a cargo do `sim-verifier`.
 - Strings de UI em pt-BR
 
@@ -22,7 +22,7 @@ Se o simulador não existir, escolha um disponível via `xcrun simctl list devic
 
 ## Estrutura
 
-- `Marco/Models/` — `ImportantDate` (@Model) e enums (`DateType`, `Relationship`)
+- `Shared/` — `ImportantDate` (@Model), enums (`DateType`, `Relationship`) e `Persistence` (App Group, T19/T20)
 - `Marco/Views/` — telas SwiftUI
 - `Marco/Services/` — `NotificationService`, `AISuggestionService`
 - `Marco/Intents/` — App Intents, `AppEntity`, `AppShortcutsProvider`
@@ -31,7 +31,7 @@ Se o simulador não existir, escolha um disponível via `xcrun simctl list devic
 ## Fluxo de trabalho (SDD)
 
 - O agente principal **apenas orquestra** — nunca edita código do app diretamente. Cada task da SPEC.md é delegada aos sub-agentes de `.claude/agents/` no pipeline: `api-scout` (verificar APIs no SDK, quando aplicável) → `swift-implementer` (implementar) → `spec-reviewer` (veredicto contra os critérios de aceite) → `sim-verifier` (evidência em runtime, quando o critério exigir).
-- Tasks executam **uma por vez**, na ordem de dependência da seção 6 da SPEC.md.
+- Tasks sem dependência entre si podem rodar em paralelo, cada uma em worktree isolado (`git worktree` / `isolation: worktree` do Agent tool); tasks com dependência seguem a ordem da seção 6 da SPEC.md. A integração de volta à `main` é sempre sequencial — uma branch de cada vez, nunca merge simultâneo. Mudanças que tocam `project.pbxproj` (novo arquivo, novo target, capability) são o ponto de atrito: o merge desse arquivo raramente é automático, então resolva o conflito manualmente antes de reportar a task concluída.
 - Os checkboxes da SPEC.md são marcados **somente pelo orquestrador**, após revisão aprovada.
 - Todos os sub-agentes usam `model: sonnet`.
 - Descobertas que contradigam a spec (API inexistente, decisão forçada) devem ser registradas na SPEC.md (seção 7 ou nota na task), não contornadas em silêncio.
