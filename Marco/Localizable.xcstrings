@@ -177,6 +177,26 @@
         }
       }
     },
+    "Buscar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        }
+      }
+    },
+    "Buscar por nome" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search by name"
+          }
+        }
+      }
+    },
     "Calendário" : {
       "localizations" : {
         "en" : {
@@ -267,6 +287,16 @@
         }
       }
     },
+    "Datas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dates"
+          }
+        }
+      }
+    },
     "Datas chegando" : {
       "localizations" : {
         "en" : {
@@ -306,6 +336,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Day"
+          }
+        }
+      }
+    },
+    "Digite o nome de uma data para buscar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type the name of a date to search."
           }
         }
       }

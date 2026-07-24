@@ -10,7 +10,14 @@ import SwiftData
 
 struct ContentView: View {
     var body: some View {
-        ImportantDateListView()
+        TabView {
+            Tab("Datas", systemImage: "list.bullet") {
+                ImportantDateListView()
+            }
+            Tab("Buscar", systemImage: "magnifyingglass") {
+                SearchDatesView()
+            }
+        }
     }
 }
 

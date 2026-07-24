@@ -102,7 +102,8 @@ struct ImportantDateListView: View {
     }
 }
 
-private struct ImportantDateRow: View {
+/// Não-`private` para ser reaproveitada também por `SearchDatesView` (T27).
+struct ImportantDateRow: View {
     let importantDate: ImportantDate
 
     var body: some View {
