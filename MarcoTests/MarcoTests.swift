@@ -376,6 +376,78 @@ struct AISuggestionServicePromptTests {
         #expect(prompt.contains("gosta de café e livros"))
         #expect(prompt.contains("amigo"))
     }
+
+    // T28: prompts respondem no idioma corrente do app (pt-BR/inglês), com fallback pt-BR.
+
+    @Test func promptDePresenteUsaPortuguesParaLocalePtBR() {
+        let prompt = AISuggestionService.giftPrompt(
+            notes: "gosta de café", relationship: .friend, locale: Locale(identifier: "pt_BR")
+        )
+
+        #expect(prompt.contains("Responda em português"))
+    }
+
+    @Test func promptDePresenteUsaInglesParaLocaleEnUS() {
+        let prompt = AISuggestionService.giftPrompt(
+            notes: "gosta de café", relationship: .friend, locale: Locale(identifier: "en_US")
+        )
+
+        #expect(prompt.contains("Respond in English"))
+        #expect(!prompt.contains("Responda em português"))
+    }
+
+    @Test func promptDePresenteFazFallbackParaPortuguesEmLocaleNaoSuportado() {
+        let prompt = AISuggestionService.giftPrompt(
+            notes: "gosta de café", relationship: .friend, locale: Locale(identifier: "fr_FR")
+        )
+
+        #expect(prompt.contains("Responda em português"))
+    }
+
+    @Test func promptDePresenteSemLocaleExplicitoUsaLocaleCorrenteComoDefault() {
+        // Sem `locale` explícito o parâmetro default é `.current` — comportamento pt-BR de
+        // antes da T28 preservado quando o locale corrente do device/processo é pt/nil.
+        let semLocale = AISuggestionService.giftPrompt(notes: "gosta de café", relationship: .friend)
+        let comLocaleCorrente = AISuggestionService.giftPrompt(
+            notes: "gosta de café", relationship: .friend, locale: .current
+        )
+
+        #expect(semLocale == comLocaleCorrente)
+    }
+
+    @Test func mensagemUsaPortuguesParaLocalePtBR() {
+        let prompt = AISuggestionService.messagePrompt(
+            name: "Mari", type: .birthday, relationship: .friend, notes: nil, locale: Locale(identifier: "pt_BR")
+        )
+
+        #expect(prompt.contains("em português"))
+    }
+
+    @Test func mensagemUsaInglesParaLocaleEnUS() {
+        let prompt = AISuggestionService.messagePrompt(
+            name: "Mari", type: .birthday, relationship: .friend, notes: nil, locale: Locale(identifier: "en_US")
+        )
+
+        #expect(prompt.contains("in English"))
+        #expect(!prompt.contains("em português"))
+    }
+
+    @Test func mensagemFazFallbackParaPortuguesEmLocaleNaoSuportado() {
+        let prompt = AISuggestionService.messagePrompt(
+            name: "Mari", type: .birthday, relationship: .friend, notes: nil, locale: Locale(identifier: "fr_FR")
+        )
+
+        #expect(prompt.contains("em português"))
+    }
+
+    @Test func mensagemSemLocaleExplicitoUsaLocaleCorrenteComoDefault() {
+        let semLocale = AISuggestionService.messagePrompt(name: "Mari", type: .birthday, relationship: .friend, notes: nil)
+        let comLocaleCorrente = AISuggestionService.messagePrompt(
+            name: "Mari", type: .birthday, relationship: .friend, notes: nil, locale: .current
+        )
+
+        #expect(semLocale == comLocaleCorrente)
+    }
 }
 
 struct ImportantDateFormViewGiftVisibilityTests {

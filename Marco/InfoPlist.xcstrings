@@ -1,0 +1,40 @@
+{
+  "sourceLanguage" : "pt-BR",
+  "strings" : {
+    "NSCalendarsFullAccessUsageDescription" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Marco usa seu Calendário para sugerir datas a importar."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marco uses your Calendar to suggest dates to import."
+          }
+        }
+      }
+    },
+    "NSContactsUsageDescription" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Marco usa seus contatos para sugerir aniversários a importar."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marco uses your contacts to suggest birthdays to import."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

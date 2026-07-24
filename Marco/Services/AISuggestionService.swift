@@ -113,30 +113,49 @@ final class AISuggestionService {
     // sem precisar estar na main actor, inclusive de contexto síncrono nos testes.
 
     /// Prompt puro (sem I/O) — testável sem rodar o modelo de fato.
-    nonisolated static func giftPrompt(notes: String, relationship: Relationship?) -> String {
+    nonisolated static func giftPrompt(notes: String, relationship: Relationship?, locale: Locale = .current) -> String {
         """
         Sugira um presente para alguém com quem tenho a seguinte relação: \(relationshipLabel(relationship)).
         Contexto sobre a pessoa (gostos, interesses): \(notes)
-        Responda em português, com um título curto e uma justificativa baseada nesse contexto.
+        \(responseLanguageInstruction(for: locale).start), com um título curto e uma justificativa baseada nesse contexto.
         """
     }
 
     /// Instrução varia por `type`: reflexiva para `.memorial`, tom leve conforme `relationship`
     /// para os demais tipos. Prompt puro — testável sem rodar o modelo de fato.
-    nonisolated static func messagePrompt(name: String, type: DateType, relationship: Relationship?, notes: String?) -> String {
+    nonisolated static func messagePrompt(
+        name: String,
+        type: DateType,
+        relationship: Relationship?,
+        notes: String?,
+        locale: Locale = .current
+    ) -> String {
         let contexto = notes.map { "Contexto adicional: \($0)." } ?? ""
+        let idioma = responseLanguageInstruction(for: locale).inline
         switch type {
         case .memorial:
             return """
-            Escreva uma mensagem curta, em português, de tom reflexivo e respeitoso em memória de \(name).
+            Escreva uma mensagem curta, \(idioma), de tom reflexivo e respeitoso em memória de \(name).
             Relação com essa pessoa: \(relationshipLabel(relationship)). \(contexto)
             Evite clichês, foque em acolhimento.
             """
         case .birthday, .commemorative:
             return """
-            Escreva uma mensagem curta, em português, para \(name) na ocasião: \(type == .birthday ? "aniversário" : "data comemorativa").
+            Escreva uma mensagem curta, \(idioma), para \(name) na ocasião: \(type == .birthday ? "aniversário" : "data comemorativa").
             Relação com essa pessoa: \(relationshipLabel(relationship)). Use tom \(tone(for: relationship)). \(contexto)
             """
+        }
+    }
+
+    /// Instrução de idioma da resposta conforme o idioma corrente do app: forma inicial de frase
+    /// (`start`, ex. "Responda em português") e forma inline (`inline`, ex. "em português").
+    /// Fallback para português se o idioma do dispositivo não for um dos dois suportados.
+    private nonisolated static func responseLanguageInstruction(for locale: Locale) -> (start: String, inline: String) {
+        switch locale.language.languageCode?.identifier {
+        case "en":
+            return ("Respond in English", "in English")
+        default:
+            return ("Responda em português", "em português")
         }
     }
 
