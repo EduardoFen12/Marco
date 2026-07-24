@@ -28,6 +28,17 @@ final class ImportantDate {
     var eventHour: Int?
     var eventMinute: Int?
     var createdAt: Date
+    /// Foto da data (T30/T31), gravada já redimensionada/comprimida pelo form — não o arquivo
+    /// bruto do `PhotosPicker`. `.externalStorage` deixa o SwiftData decidir se guarda inline ou
+    /// num arquivo à parte conforme o tamanho, em vez de inchar a linha da tabela. Campo opcional
+    /// novo, default `nil` — lightweight migration do SwiftData para stores existentes.
+    @Attribute(.externalStorage) var photoData: Data?
+    /// Data em destaque (mostrada no card do topo da Home, T33). Exclusividade (só uma por vez) e
+    /// a regra de nascimento (1ª data criada num store vazio nasce em destaque) são responsabilidade
+    /// de `ImportantDate.insert(_:into:)`/`markAsFeatured(in:)` — ponto único de escrita, não deve
+    /// ser setada diretamente pelos call sites de criação/edição. Campo novo com default `false` —
+    /// lightweight migration do SwiftData para stores existentes.
+    var isFeatured: Bool = false
 
     init(
         id: UUID = UUID(),
@@ -41,7 +52,9 @@ final class ImportantDate {
         notificationMinute: Int = 0,
         eventHour: Int? = nil,
         eventMinute: Int? = nil,
-        createdAt: Date = .now
+        createdAt: Date = .now,
+        photoData: Data? = nil,
+        isFeatured: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -55,6 +68,40 @@ final class ImportantDate {
         self.eventHour = eventHour
         self.eventMinute = eventMinute
         self.createdAt = createdAt
+        self.photoData = photoData
+        self.isFeatured = isFeatured
+    }
+}
+
+// MARK: - Destaque (isFeatured)
+
+extension ImportantDate {
+    /// Ponto único de escrita para inserir uma nova `ImportantDate` no `context`. Aplica a regra
+    /// de nascimento em destaque (T30): quando o store está vazio no momento da inserção, a data
+    /// nasce em destaque; do contrário nasce sem destaque. Todo fluxo de criação (form, App
+    /// Intent, importação) deve chamar este método em vez de `context.insert` diretamente, para
+    /// a regra e a exclusividade valerem em todos os lugares.
+    static func insert(_ importantDate: ImportantDate, into context: ModelContext) {
+        let isStoreEmpty = ((try? context.fetchCount(FetchDescriptor<ImportantDate>())) ?? 0) == 0
+        context.insert(importantDate)
+        if isStoreEmpty {
+            importantDate.markAsFeatured(in: context)
+        }
+    }
+
+    /// Marca esta data como destaque, desmarcando todas as demais no `context` — ponto único de
+    /// escrita da exclusividade de `isFeatured` (garante no máximo uma data em destaque por vez).
+    func markAsFeatured(in context: ModelContext) {
+        let selfID = id
+        let othersFeatured = FetchDescriptor<ImportantDate>(
+            predicate: #Predicate { $0.isFeatured && $0.id != selfID }
+        )
+        if let others = try? context.fetch(othersFeatured) {
+            for other in others {
+                other.isFeatured = false
+            }
+        }
+        isFeatured = true
     }
 }
 

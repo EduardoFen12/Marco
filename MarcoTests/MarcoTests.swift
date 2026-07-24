@@ -731,3 +731,86 @@ struct ModelContextDeletePendingChangesTests {
         #expect(datesAfterDelete.isEmpty)
     }
 }
+
+struct ImportantDateFeaturedAndPhotoTests {
+    // T30: exclusividade de `isFeatured`, regra de nascimento (1ª data num store vazio nasce em
+    // destaque, as seguintes não) e round-trip de `photoData` — tudo através do ponto único de
+    // escrita `ImportantDate.insert(_:into:)`/`markAsFeatured(in:)`.
+
+    private func makeContext() throws -> ModelContext {
+        let container = try ModelContainer(
+            for: ImportantDate.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        return ModelContext(container)
+    }
+
+    @Test func primeiraDataCriadaEmStoreVazioNasceEmDestaque() throws {
+        let context = try makeContext()
+        let first = ImportantDate(name: "Mari", date: .now, type: .birthday)
+
+        ImportantDate.insert(first, into: context)
+
+        #expect(first.isFeatured)
+    }
+
+    @Test func dataSeguinteNaoNasceEmDestaque() throws {
+        let context = try makeContext()
+        let first = ImportantDate(name: "Mari", date: .now, type: .birthday)
+        ImportantDate.insert(first, into: context)
+
+        let second = ImportantDate(name: "Ana", date: .now, type: .birthday)
+        ImportantDate.insert(second, into: context)
+
+        #expect(first.isFeatured)
+        #expect(!second.isFeatured)
+    }
+
+    @Test func marcarUmaComoDestaqueDesmarcaAsDemais() throws {
+        let context = try makeContext()
+        let first = ImportantDate(name: "Mari", date: .now, type: .birthday)
+        let second = ImportantDate(name: "Ana", date: .now, type: .birthday)
+        let third = ImportantDate(name: "Léo", date: .now, type: .birthday)
+        ImportantDate.insert(first, into: context)
+        ImportantDate.insert(second, into: context)
+        ImportantDate.insert(third, into: context)
+
+        #expect(first.isFeatured)
+        #expect(!second.isFeatured)
+        #expect(!third.isFeatured)
+
+        third.markAsFeatured(in: context)
+
+        #expect(!first.isFeatured)
+        #expect(!second.isFeatured)
+        #expect(third.isFeatured)
+    }
+
+    @Test func marcarComoDestaqueQuandoJaEDestaqueMantemApenasElaMarcada() throws {
+        let context = try makeContext()
+        let only = ImportantDate(name: "Mari", date: .now, type: .birthday)
+        ImportantDate.insert(only, into: context)
+        #expect(only.isFeatured)
+
+        only.markAsFeatured(in: context)
+
+        #expect(only.isFeatured)
+    }
+
+    @Test func photoDataFazRoundTripAoSalvarERecarregar() throws {
+        let container = try ModelContainer(
+            for: ImportantDate.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = ModelContext(container)
+        let photo = Data([0xDE, 0xAD, 0xBE, 0xEF])
+        let importantDate = ImportantDate(name: "Mari", date: .now, type: .birthday)
+        importantDate.photoData = photo
+        ImportantDate.insert(importantDate, into: context)
+        try context.save()
+
+        let id = importantDate.id
+        let results = try context.fetch(FetchDescriptor<ImportantDate>(predicate: #Predicate { $0.id == id }))
+        let reloaded = try #require(results.first)
+
+        #expect(reloaded.photoData == photo)
+    }
+}

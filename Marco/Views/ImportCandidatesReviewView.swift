@@ -139,7 +139,7 @@ struct ImportCandidatesReviewView: View {
                 type: candidate.type,
                 birthYear: candidate.birthYear
             )
-            modelContext.insert(importantDate)
+            ImportantDate.insert(importantDate, into: modelContext)
             Task {
                 await NotificationService.schedule(importantDate)
             }

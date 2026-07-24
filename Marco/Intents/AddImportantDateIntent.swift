@@ -34,7 +34,7 @@ struct AddImportantDateIntent: AppIntent {
 
         let importantDate = ImportantDate(name: trimmedName, date: date, type: type)
         let context = ModelContext(Persistence.container)
-        context.insert(importantDate)
+        ImportantDate.insert(importantDate, into: context)
         try context.save()
 
         await NotificationService.schedule(importantDate)

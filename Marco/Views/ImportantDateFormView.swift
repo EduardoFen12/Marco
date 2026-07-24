@@ -245,7 +245,7 @@ struct ImportantDateFormView: View {
                 eventHour: eventHour,
                 eventMinute: eventMinute
             )
-            modelContext.insert(newDate)
+            ImportantDate.insert(newDate, into: modelContext)
             savedDate = newDate
         }
         Task { await NotificationService.schedule(savedDate) }

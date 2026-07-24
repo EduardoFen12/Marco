@@ -291,7 +291,7 @@ A partir da Fase 3, a UI passa a seguir o redesign final desenhado no Figma (arq
   Criar/atualizar color sets no `Assets.xcassets` para a paleta do redesign Figma, com variantes dark definidas (sem mock de referência para dark — usar critério de contraste HIG): manter `MarcosGreen` (`#54BBAB`) já existente e adicionar `MarcoDarkGreen` (`#006B5F`), `MarcoDeepGreen` (`#00483F`), `MarcoGray` (`#BDC9C5`), `MarcoCream` (`#FFF8EF`), `MarcoCardFill` (`#FAF3E6`), `MarcoBeige` (`#E9E2D5`), `MarcoMint` (`#A4F1E5`), `MarcoLabel` (`#1E1B14`), `MarcoLabelSecondary` (`#3D4946`). Ações destrutivas continuam usando `Color.red`/`.systemRed` nativo (não um color set custom).
   *Aceite:* color sets compilam e resolvem corretamente em light e dark (preview/simulador); nenhum hex hardcoded fora dos assets nas telas migradas por esta fase. *Depende de:* —
 
-- [ ] **T30 — Modelo: foto e data em destaque**
+- [x] **T30 — Modelo: foto e data em destaque**
   Em `ImportantDate`: adicionar `@Attribute(.externalStorage) var photoData: Data?` (default `nil`) e `var isFeatured: Bool = false`, com a exclusividade garantida no ponto único de escrita (marcar uma data como destaque desmarca as demais). Quando o store estiver vazio, a próxima `ImportantDate` criada nasce `isFeatured = true` automaticamente; criações subsequentes nascem `false`. Migração leve do SwiftData.
   *Aceite:* testes cobrindo exclusividade do `isFeatured`, a 1ª data criada nascendo em destaque (store vazio) e as seguintes não, e round-trip de `photoData`; store existente migra sem quebrar. *Depende de:* —
 
