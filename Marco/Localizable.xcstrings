@@ -420,6 +420,16 @@
         }
       }
     },
+    "Excluir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
     "Falta 1 dia" : {
       "localizations" : {
         "en" : {

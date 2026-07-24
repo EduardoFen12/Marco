@@ -19,11 +19,24 @@ struct ImportantDateListView: View {
     /// aparece no card — quando nenhuma data está destacada, `featuredDate` é `nil` e nada é
     /// filtrado. `ForEach`/`onDelete` abaixo iteram sobre esta mesma coleção, então os índices
     /// do `IndexSet` batem certinho com o item exibido.
+    ///
+    /// A ordenação precisa ser total e determinística: `sorted(by:)` não é estável, então em
+    /// caso de empate em `daysUntilNextOccurrence()` (ex.: duas datas "hoje") duas avaliações
+    /// da mesma `sortedDates` podiam produzir permutações diferentes — o `ForEach` renderiza uma
+    /// ordem e `delete(at:)` reavalia `sortedDates` e indexa outra, apagando o item errado.
+    /// Desempatando por `name` e, por fim, por `id` (único e estável), a ordem passa a ser
+    /// sempre a mesma para os mesmos dados, então `ForEach` e `delete(at:)` sempre concordam.
     private var sortedDates: [ImportantDate] {
         importantDates
             .filter { $0.id != featuredDate?.id }
             .sorted {
-                $0.daysUntilNextOccurrence() < $1.daysUntilNextOccurrence()
+                if $0.daysUntilNextOccurrence() != $1.daysUntilNextOccurrence() {
+                    return $0.daysUntilNextOccurrence() < $1.daysUntilNextOccurrence()
+                }
+                if $0.name != $1.name {
+                    return $0.name < $1.name
+                }
+                return $0.id.uuidString < $1.id.uuidString
             }
     }
 
@@ -47,7 +60,11 @@ struct ImportantDateListView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .contextMenu {
-                        markAsFeaturedButton(for: featuredDate)
+                        Button(role: .destructive) {
+                            delete(featuredDate)
+                        } label: {
+                            Label("Excluir", systemImage: "trash")
+                        }
                     }
                 }
 
@@ -125,13 +142,19 @@ struct ImportantDateListView: View {
 
     private func delete(at offsets: IndexSet) {
         for index in offsets {
-            let importantDate = sortedDates[index]
-            // Deleta primeiro: `cancel` dispara `syncWatch`, que refaz o fetch de todas as
-            // `ImportantDate` pro widget/Watch — precisa que o item já esteja fora do contexto
-            // nesse fetch, senão widget/Watch mostram a data recém-excluída até o próximo CRUD.
-            modelContext.delete(importantDate)
-            NotificationService.cancel(importantDate)
+            delete(sortedDates[index])
         }
+    }
+
+    /// Ponto único de exclusão (T33): usado pelo swipe da lista (`delete(at:)`) e pela ação
+    /// "Excluir" do `contextMenu` do card de destaque, que não tinha nenhuma affordance de
+    /// exclusão desde que passou a ficar fora de `sortedDates`.
+    private func delete(_ importantDate: ImportantDate) {
+        // Deleta primeiro: `cancel` dispara `syncWatch`, que refaz o fetch de todas as
+        // `ImportantDate` pro widget/Watch — precisa que o item já esteja fora do contexto
+        // nesse fetch, senão widget/Watch mostram a data recém-excluída até o próximo CRUD.
+        modelContext.delete(importantDate)
+        NotificationService.cancel(importantDate)
         // Se a data excluída era a destacada, nenhuma outra assume o lugar automaticamente
         // (comportamento explícito de T30/T33) — `featuredDate` volta a ser `nil` sozinho, já
         // que ele é derivado de `importantDates` via `@Query`.
