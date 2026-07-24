@@ -44,7 +44,7 @@ struct ImportantDateListView: View {
             }
             .navigationDestination(for: UUID.self) { id in
                 if let importantDate = importantDates.first(where: { $0.id == id }) {
-                    ImportantDateFormView(importantDate: importantDate)
+                    ImportantDateDetailView(importantDate: importantDate)
                 }
             }
             .navigationTitle("Datas importantes")
