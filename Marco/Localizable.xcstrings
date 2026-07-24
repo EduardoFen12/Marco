@@ -67,6 +67,16 @@
         }
       }
     },
+    "Adicionar foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add photo"
+          }
+        }
+      }
+    },
     "Adicionar ${name} (${type}) em ${date}" : {
       "localizations" : {
         "en" : {
@@ -799,6 +809,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date type"
+          }
+        }
+      }
+    },
+    "Trocar foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change photo"
           }
         }
       }

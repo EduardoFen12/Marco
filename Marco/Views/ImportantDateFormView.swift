@@ -6,6 +6,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import PhotosUI
 import FoundationModels
 
 /// Tela de criação/edição de uma `ImportantDate`. Passe `importantDate: nil` para criar
@@ -28,6 +29,8 @@ struct ImportantDateFormView: View {
     @State private var notificationTime: Date
     @State private var hasEventTime: Bool
     @State private var eventTime: Date
+    @State private var photoData: Data?
+    @State private var photoPickerItem: PhotosPickerItem?
 
     @State private var isSuggestingGift = false
     @State private var giftResult: Result<GiftSuggestion, AISuggestionError>?
@@ -54,6 +57,7 @@ struct ImportantDateFormView: View {
         let eventMinute = importantDate?.eventMinute
         _hasEventTime = State(initialValue: eventHour != nil && eventMinute != nil)
         _eventTime = State(initialValue: Self.time(hour: eventHour ?? 12, minute: eventMinute ?? 0))
+        _photoData = State(initialValue: importantDate?.photoData)
     }
 
     private var isNameValid: Bool {
@@ -100,7 +104,99 @@ struct ImportantDateFormView: View {
         Int(text.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
+    /// Redimensiona `image` para no máximo `maxDimension` no maior lado (preservando proporção) e
+    /// comprime como JPEG — nunca grava o arquivo bruto do `PhotosPicker` em `photoData`. Função
+    /// pura (`nonisolated static`), testável direto sem tocar a view.
+    static func compressedPhotoData(
+        from image: UIImage,
+        maxDimension: CGFloat = 800,
+        compressionQuality: CGFloat = 0.7
+    ) -> Data? {
+        let size = image.size
+        let largestSide = max(size.width, size.height)
+        let scale = largestSide > maxDimension ? maxDimension / largestSide : 1
+        let targetSize = CGSize(width: size.width * scale, height: size.height * scale)
+        // `scale = 1` faz o JPEG codificado ter exatamente `targetSize` em pixels — sem isso, o
+        // renderer usa a escala nativa da tela (2x/3x) e o `UIImage(data:)` recarregado (que
+        // assume escala 1 por padrão) reportaria `size` maior que `maxDimension`.
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
+        let resized = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+        return resized.jpegData(compressionQuality: compressionQuality)
+    }
+
     var body: some View {
+        VStack(spacing: 0) {
+            photoHeader
+            formContent
+        }
+        .navigationTitle(importantDate == nil ? "Nova data" : "Editar data")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if importantDate == nil {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Salvar") { save() }
+                    .disabled(!isNameValid)
+            }
+        }
+        .onChange(of: photoPickerItem) { _, newItem in
+            Task { await loadPickedPhoto(newItem) }
+        }
+    }
+
+    /// Banner de foto (T31): ~192pt de altura, cantos com radius 32. Sem foto, mostra um estado
+    /// vazio com borda tracejada + ícone + texto, claramente tocável (não um ícone de câmera
+    /// sobreposto à imagem). Tocar em qualquer estado abre o `PhotosPicker`.
+    private var photoHeader: some View {
+        PhotosPicker(selection: $photoPickerItem, matching: .images) {
+            Group {
+                if let photoData, let uiImage = UIImage(data: photoData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 32)
+                            .fill(Color(.secondarySystemBackground))
+                        RoundedRectangle(cornerRadius: 32)
+                            .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8]))
+                            .foregroundStyle(.tertiary)
+                        VStack(spacing: 8) {
+                            Image(systemName: "photo.badge.plus")
+                                .font(.title)
+                            Text("Adicionar foto")
+                                .font(.subheadline)
+                        }
+                        .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 192)
+            .clipShape(RoundedRectangle(cornerRadius: 32))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(photoData == nil ? Text("Adicionar foto") : Text("Trocar foto"))
+        .padding(.horizontal)
+        .padding(.top, 8)
+    }
+
+    @MainActor
+    private func loadPickedPhoto(_ item: PhotosPickerItem?) async {
+        guard let item,
+              let data = try? await item.loadTransferable(type: Data.self),
+              let uiImage = UIImage(data: data) else { return }
+        photoData = Self.compressedPhotoData(from: uiImage)
+    }
+
+    private var formContent: some View {
         Form {
             Section("Informações") {
                 if let ageLabel = ImportantDate.ageLabel(forAge: importantDate?.age()) {
@@ -194,19 +290,6 @@ struct ImportantDateFormView: View {
                 }
             }
         }
-        .navigationTitle(importantDate == nil ? "Nova data" : "Editar data")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            if importantDate == nil {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
-                }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Salvar") { save() }
-                    .disabled(!isNameValid)
-            }
-        }
     }
 
     private func save() {
@@ -231,6 +314,7 @@ struct ImportantDateFormView: View {
             importantDate.notificationMinute = minute
             importantDate.eventHour = eventHour
             importantDate.eventMinute = eventMinute
+            importantDate.photoData = photoData
             savedDate = importantDate
         } else {
             let newDate = ImportantDate(
@@ -243,7 +327,8 @@ struct ImportantDateFormView: View {
                 notificationHour: hour,
                 notificationMinute: minute,
                 eventHour: eventHour,
-                eventMinute: eventMinute
+                eventMinute: eventMinute,
+                photoData: photoData
             )
             ImportantDate.insert(newDate, into: modelContext)
             savedDate = newDate

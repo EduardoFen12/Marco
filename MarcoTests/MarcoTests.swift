@@ -9,6 +9,7 @@ import Testing
 import Foundation
 import AppIntents
 import SwiftData
+import UIKit
 @testable import Marco
 
 struct ImportantDateNextOccurrenceTests {
@@ -534,6 +535,48 @@ struct ImportantDateFormViewBirthdayAndTimeTests {
 
         #expect(calendar.component(.hour, from: result) == 9)
         #expect(calendar.component(.minute, from: result) == 15)
+    }
+}
+
+struct ImportantDateFormViewPhotoCompressionTests {
+    // T31: `compressedPhotoData` nunca grava o arquivo bruto do PhotosPicker — redimensiona pro
+    // maior lado não passar de `maxDimension` e comprime como JPEG.
+
+    private func solidImage(width: CGFloat, height: CGFloat) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: width, height: height))
+        return renderer.image { context in
+            UIColor.systemTeal.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        }
+    }
+
+    @Test func limitaMaiorLadoAoMaxDimensionPreservandoProporcao() throws {
+        let original = solidImage(width: 4000, height: 2000)
+
+        let data = try #require(ImportantDateFormView.compressedPhotoData(from: original, maxDimension: 800))
+        let resized = try #require(UIImage(data: data))
+
+        #expect(resized.size.width == 800)
+        #expect(resized.size.height == 400)
+    }
+
+    @Test func naoAmpliaImagemMenorQueMaxDimension() throws {
+        let original = solidImage(width: 300, height: 200)
+
+        let data = try #require(ImportantDateFormView.compressedPhotoData(from: original, maxDimension: 800))
+        let resized = try #require(UIImage(data: data))
+
+        #expect(resized.size.width == 300)
+        #expect(resized.size.height == 200)
+    }
+
+    @Test func dataResultanteEhMenorQueOsPixelsBrutosDaImagemOriginal() throws {
+        let original = solidImage(width: 2000, height: 2000)
+        let rawPixelByteCount = Int(original.size.width * original.size.height * 4)
+
+        let data = try #require(ImportantDateFormView.compressedPhotoData(from: original, maxDimension: 800))
+
+        #expect(data.count < rawPixelByteCount)
     }
 }
 
