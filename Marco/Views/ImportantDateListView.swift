@@ -48,46 +48,43 @@ struct ImportantDateListView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            List {
-                if let featuredDate {
-                    Button {
-                        path.append(featuredDate.id)
-                    } label: {
-                        FeaturedDateCard(importantDate: featuredDate)
-                    }
-                    .buttonStyle(.plain)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .contextMenu {
-                        Button(role: .destructive) {
-                            delete(featuredDate)
-                        } label: {
-                            Label("Excluir", systemImage: "trash")
-                        }
-                    }
-                }
-
+            Group {
                 if importantDates.isEmpty {
-                    ContentUnavailableView {
-                        Label("Nenhuma data cadastrada", systemImage: "calendar.badge.plus")
-                    } description: {
-                        Text("Toque em + para adicionar uma data importante.")
-                    } actions: {
-                        Button("Importar…") {
-                            isPresentingImport = true
-                        }
-                    }
+                    EmptyDatesView(
+                        onAddDate: { isPresentingNewDate = true },
+                        onImport: { isPresentingImport = true }
+                    )
                 } else {
-                    ForEach(sortedDates) { importantDate in
-                        NavigationLink(value: importantDate.id) {
-                            ImportantDateRow(importantDate: importantDate)
+                    List {
+                        if let featuredDate {
+                            Button {
+                                path.append(featuredDate.id)
+                            } label: {
+                                FeaturedDateCard(importantDate: featuredDate)
+                            }
+                            .buttonStyle(.plain)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    delete(featuredDate)
+                                } label: {
+                                    Label("Excluir", systemImage: "trash")
+                                }
+                            }
                         }
-                        .contextMenu {
-                            markAsFeaturedButton(for: importantDate)
+
+                        ForEach(sortedDates) { importantDate in
+                            NavigationLink(value: importantDate.id) {
+                                ImportantDateRow(importantDate: importantDate)
+                            }
+                            .contextMenu {
+                                markAsFeaturedButton(for: importantDate)
+                            }
                         }
+                        .onDelete(perform: delete)
                     }
-                    .onDelete(perform: delete)
                 }
             }
             .navigationDestination(for: UUID.self) { id in
@@ -167,6 +164,75 @@ struct ImportantDateListView: View {
               importantDates.contains(where: { $0.id == id }) else { return }
         path.append(id)
         notificationCoordinator.pendingImportantDateID = nil
+    }
+}
+
+/// Empty state dedicado (T34, mock Figma "Empty State"): substitui a `List` inteira quando não
+/// há nenhuma `ImportantDate` — a toolbar Compact/Large + `Menu` do `+` (T33) permanece intacta,
+/// só o conteúdo abaixo dela muda. Os dois botões reaproveitam exatamente os mesmos closures que
+/// o `Menu` já dispara (nenhum caminho novo de apresentação).
+private struct EmptyDatesView: View {
+    let onAddDate: () -> Void
+    let onImport: () -> Void
+
+    var body: some View {
+        ContentUnavailableView {
+            EmptyDatesIllustration()
+        } description: {
+            VStack(spacing: 8) {
+                Text("Nenhuma data cadastrada")
+                    .font(.title2.bold())
+                    .foregroundStyle(Color("MarcoLabel"))
+                Text("Toque em + para adicionar uma data importante")
+                    .font(.subheadline)
+                    .foregroundStyle(Color("MarcoLabelSecondary"))
+                    .multilineTextAlignment(.center)
+            }
+        } actions: {
+            VStack(spacing: 12) {
+                Button("Adicionar Marco", action: onAddDate)
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color("MarcosGreen"))
+
+                Button("Importar…", action: onImport)
+                    .buttonStyle(.bordered)
+                    .tint(Color("MarcoDeepGreen"))
+            }
+            .controlSize(.large)
+        }
+    }
+}
+
+/// Ilustração custom do empty state (T34): calendário + sino + coração compostos com SF Symbols
+/// sobre os color sets do design system (T29) — sem asset de imagem novo.
+private struct EmptyDatesIllustration: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color("MarcoMint").opacity(0.35))
+                .frame(width: 148, height: 148)
+
+            Image(systemName: "calendar")
+                .font(.system(size: 64))
+                .foregroundStyle(Color("MarcoDeepGreen"))
+
+            badge(systemImage: "bell.fill", tint: Color("MarcoDarkGreen"))
+                .offset(x: 46, y: -50)
+
+            badge(systemImage: "heart.fill", tint: Color("MarcosGreen"))
+                .offset(x: -50, y: 46)
+        }
+        .frame(width: 148, height: 148)
+        .padding(.bottom, 8)
+    }
+
+    private func badge(systemImage: String, tint: Color) -> some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 20))
+            .foregroundStyle(tint)
+            .padding(10)
+            .background(Circle().fill(Color("MarcoCream")))
+            .overlay(Circle().stroke(Color("MarcoBeige"), lineWidth: 1))
     }
 }
 
