@@ -76,15 +76,23 @@ struct ImportantDateListView: View {
                         }
 
                         ForEach(sortedDates) { importantDate in
-                            NavigationLink(value: importantDate.id) {
+                            Button {
+                                path.append(importantDate.id)
+                            } label: {
                                 ImportantDateRow(importantDate: importantDate)
                             }
+                            .buttonStyle(.plain)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                             .contextMenu {
                                 markAsFeaturedButton(for: importantDate)
                             }
                         }
                         .onDelete(perform: delete)
                     }
+                    .scrollContentBackground(.hidden)
+                    .background(Color("MarcoCream"))
                 }
             }
             .navigationDestination(for: UUID.self) { id in
@@ -242,10 +250,6 @@ private struct EmptyDatesIllustration: View {
 private struct FeaturedDateCard: View {
     let importantDate: ImportantDate
 
-    private var dateLabel: String {
-        importantDate.date.formatted(.dateTime.day().month(.wide))
-    }
-
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             background
@@ -304,7 +308,7 @@ private struct FeaturedDateCard: View {
             Text(importantDate.name)
                 .font(.title.bold())
                 .foregroundStyle(.white)
-            (Text(importantDate.type.displayName) + Text(" · ") + Text(dateLabel))
+            (Text(importantDate.type.displayName) + Text(" · ") + Text(importantDate.dateLabel))
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.85))
             Text(importantDate.daysRemainingLabel)
@@ -315,41 +319,64 @@ private struct FeaturedDateCard: View {
     }
 }
 
-/// Não-`private` para ser reaproveitada também por `SearchDatesView` (T27).
+/// Card flutuante de cada data na lista (T39, mock Figma "Minhas Datas (Home)" `13:5`): tipo em
+/// cima (discreto), nome em destaque, subtítulo com a data (+ idade/hora do evento quando houver)
+/// e o número de dias grande à direita, colorido pela mesma cor da stripe de categoria. Não-
+/// `private` para ser reaproveitada também por `SearchDatesView` (T27).
 struct ImportantDateRow: View {
     let importantDate: ImportantDate
 
-    var body: some View {
-        HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(importantDate.type.stripeColor)
-                .frame(width: 4)
-                .frame(maxHeight: .infinity)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(importantDate.name)
-                    .font(.headline)
-                Text(importantDate.type.displayName)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                if let ageLabel = ImportantDate.ageLabel(forAge: importantDate.age()) {
-                    Text(ageLabel)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(importantDate.daysRemainingLabel)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(Color("MarcoDarkGreen"))
-                if let eventTimeLabel = importantDate.eventTimeLabel {
-                    Text(eventTimeLabel)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
+    /// "15 de Junho" / "02 de Julho • 10 anos" / "15 de Junho • às 19:00" (T26) — a idade e a hora
+    /// do evento entram como sufixos opcionais quando existem, sem inventar um texto relativo tipo
+    /// "Próximo sábado" (o mock `13:5` mostra esse formato num card, mas o modelo hoje só guarda
+    /// dia/mês + hora do evento, não "dia da semana relativo"; ver nota no report da T39).
+    private var subtitle: Text {
+        var text = Text(importantDate.dateLabel)
+        if let ageLabel = ImportantDate.ageLabel(forAge: importantDate.age()) {
+            text = text + Text(" • ") + Text(ageLabel)
         }
-        .padding(.vertical, 4)
+        if let eventTimeLabel = importantDate.eventTimeLabel {
+            text = text + Text(" • ") + Text(eventTimeLabel)
+        }
+        return text
+    }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Rectangle()
+                .fill(importantDate.type.stripeColor)
+                .frame(width: 5)
+
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(importantDate.type.displayName)
+                        .font(.caption)
+                        .foregroundStyle(Color("MarcoLabelSecondary"))
+                    Text(importantDate.name)
+                        .font(.title3.bold())
+                        .foregroundStyle(Color("MarcoLabel"))
+                    subtitle
+                        .font(.subheadline)
+                        .foregroundStyle(Color("MarcoLabelSecondary"))
+                }
+
+                Spacer(minLength: 12)
+
+                VStack(spacing: 0) {
+                    Text(importantDate.daysUntilNextOccurrence(), format: .number)
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(importantDate.type.stripeColor)
+                    Text("DIAS")
+                        .font(.caption2.bold())
+                        .tracking(1)
+                        .foregroundStyle(Color("MarcoLabelSecondary"))
+                }
+            }
+            .padding(16)
+        }
+        .background(Color("MarcoCardFill"))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
     }
 }
 
@@ -381,6 +408,12 @@ extension ImportantDate {
         let formattedTime = String(format: "%02d:%02d", eventHour, eventMinute)
         return "às \(formattedTime)"
     }
+
+    /// "15 de Junho" — dia + mês por extenso, usado no card de destaque (T33) e nos cards da
+    /// lista (T39); sem ano, já que a recorrência anual ignora o ano de `date`.
+    var dateLabel: String {
+        date.formatted(.dateTime.day().month(.wide))
+    }
 }
 
 extension DateType {
@@ -392,12 +425,14 @@ extension DateType {
         }
     }
 
-    /// Cor da stripe de categoria à esquerda da célula (T33) — usa apenas color sets do design
-    /// system (T29), sem hex hardcoded.
+    /// Cor da stripe de categoria à esquerda da célula (T33) e do número de dias no card (T39) —
+    /// usa apenas color sets do design system (T29), sem hex hardcoded. Ajustada na T39 para bater
+    /// com o mock `13:5`: memorial cinza, aniversário teal, comemorativa verde escuro (T33 tinha
+    /// posto `MarcoMint`, um mint claro, na comemorativa — sem referência de mock à época).
     var stripeColor: Color {
         switch self {
         case .birthday: return Color("MarcosGreen")
-        case .commemorative: return Color("MarcoMint")
+        case .commemorative: return Color("MarcoDarkGreen")
         case .memorial: return Color("MarcoGray")
         }
     }
