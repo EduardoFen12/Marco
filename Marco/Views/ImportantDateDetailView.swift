@@ -63,6 +63,9 @@ struct ImportantDateDetailView: View {
                 }
             }
         }
+        // Empurrada a partir da Home (T36, mock Figma): esconde a tab bar, já que esta tela
+        // não faz parte da navegação por abas.
+        .toolbar(.hidden, for: .tabBar)
     }
 
     private var header: some View {
