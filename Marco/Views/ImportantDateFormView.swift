@@ -62,17 +62,6 @@ struct ImportantDateFormView: View {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// Regra de visibilidade do botão "Sugerir presente" em `ImportantDateDetailView` (T32):
-    /// exige modelo disponível e `notes` preenchidas (senão a sugestão fica genérica demais —
-    /// ver SPEC 3.4). Nunca aparece para `type == .memorial` — não faz sentido sugerir presente
-    /// para uma data de falecimento/homenagem. Continua morando aqui (e `static`) porque nasceu
-    /// junto com o form (T23); movida de call site na T35, mas a função em si segue reaproveitada
-    /// pelo Detalhe.
-    static func showsGiftSuggestion(notes: String, type: DateType, isModelAvailable: Bool) -> Bool {
-        guard type != .memorial else { return false }
-        return isModelAvailable && !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
     /// Componentes de hora/minuto extraídos de `time`, prontos para gravar em
     /// `notificationHour`/`notificationMinute`.
     static func timeComponents(from time: Date, calendar: Calendar = .current) -> (hour: Int, minute: Int) {
@@ -298,17 +287,18 @@ struct ImportantDateFormView: View {
         }
     }
 
+    /// Chips quebram em múltiplas linhas (T37, mock Figma `24:61`) em vez de rolar horizontalmente
+    /// — `FlowLayout` abaixo. "Nenhum" (seção 3.9 da spec, sem correspondente no mock) entra no
+    /// mesmo fluxo, totalizando 6 chips.
     private var relationshipCard: some View {
         FormSectionCard(label: "Relacionamento") {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    RelationshipChip(title: "Nenhum", isSelected: relationship == nil) {
-                        relationship = nil
-                    }
-                    ForEach(Relationship.allCases, id: \.self) { option in
-                        RelationshipChip(title: option.displayName, isSelected: relationship == option) {
-                            relationship = option
-                        }
+            FlowLayout(spacing: 8) {
+                RelationshipChip(title: "Nenhum", isSelected: relationship == nil) {
+                    relationship = nil
+                }
+                ForEach(Relationship.allCases, id: \.self) { option in
+                    RelationshipChip(title: option.displayName, isSelected: relationship == option) {
+                        relationship = option
                     }
                 }
             }
@@ -388,24 +378,24 @@ struct ImportantDateFormView: View {
     }
 }
 
-/// Card de seção com label flutuante (T35): título pequeno em maiúsculas no topo do card,
-/// conteúdo livre abaixo — usado por todas as seções do form ("Identificação", "Quando",
-/// "Lembretes", "Categoria", "Relacionamento", "Anotações").
+/// Card de seção com label estática acima do card (T37, conferido contra o mock Figma `24:61`):
+/// título pequeno e discreto em *sentence case*, fora do container com fundo/clip — usado por
+/// todas as seções do form ("Identificação", "Quando", "Lembretes", "Categoria",
+/// "Relacionamento", "Anotações"). Não é floating label animado estilo Material.
 private struct FormSectionCard<Content: View>: View {
     let label: LocalizedStringResource
     @ViewBuilder var content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(label)
                 .font(.caption.bold())
-                .textCase(.uppercase)
                 .foregroundStyle(Color("MarcoLabelSecondary"))
             content
+                .padding(16)
+                .background(Color("MarcoCardFill"))
+                .clipShape(RoundedRectangle(cornerRadius: 20))
         }
-        .padding(16)
-        .background(Color("MarcoCardFill"))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }
 
@@ -426,6 +416,71 @@ private struct RelationshipChip: View {
                 .foregroundStyle(isSelected ? Color.white : Color("MarcoLabel"))
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// Layout mínimo (protocolo `Layout`, iOS 16+) que distribui subviews em fileiras, quebrando
+/// para a linha seguinte quando a largura proposta estoura (T37, mock Figma `24:61`) — usado
+/// pelos chips de "Relacionamento" para não rolar horizontalmente. Não é um sistema de layout
+/// genérico/configurável, só o suficiente para quebrar linha por largura.
+private struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        let computedRows = rows(for: subviews, maxWidth: maxWidth)
+        let height = computedRows.reduce(CGFloat(0)) { $0 + $1.maxHeight } + CGFloat(max(0, computedRows.count - 1)) * spacing
+        let width = computedRows.map(\.width).max() ?? 0
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let computedRows = rows(for: subviews, maxWidth: bounds.width)
+        var y = bounds.minY
+        for row in computedRows {
+            var x = bounds.minX
+            for item in row.items {
+                item.subview.place(at: CGPoint(x: x, y: y), anchor: .topLeading, proposal: ProposedViewSize(item.size))
+                x += item.size.width + spacing
+            }
+            y += row.maxHeight + spacing
+        }
+    }
+
+    private struct RowItem {
+        let subview: LayoutSubview
+        let size: CGSize
+    }
+
+    private struct Row {
+        let items: [RowItem]
+        let width: CGFloat
+        let maxHeight: CGFloat
+    }
+
+    private func rows(for subviews: Subviews, maxWidth: CGFloat) -> [Row] {
+        var computedRows: [Row] = []
+        var items: [RowItem] = []
+        var width: CGFloat = 0
+        var maxHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            let widthIfAppended = items.isEmpty ? size.width : width + spacing + size.width
+            if widthIfAppended > maxWidth, !items.isEmpty {
+                computedRows.append(Row(items: items, width: width, maxHeight: maxHeight))
+                items = []
+                width = 0
+                maxHeight = 0
+            }
+            width = items.isEmpty ? size.width : width + spacing + size.width
+            maxHeight = max(maxHeight, size.height)
+            items.append(RowItem(subview: subview, size: size))
+        }
+        if !items.isEmpty {
+            computedRows.append(Row(items: items, width: width, maxHeight: maxHeight))
+        }
+        return computedRows
     }
 }
 

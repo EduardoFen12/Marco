@@ -70,6 +70,17 @@ final class AISuggestionService {
     var availability: SystemLanguageModel.Availability { model.availability }
     var isAvailable: Bool { model.isAvailable }
 
+    /// Regra de visibilidade do botão "Sugerir presente" (`ImportantDateDetailView`, T32): exige
+    /// modelo disponível e `notes` preenchidas (senão a sugestão fica genérica demais — ver SPEC
+    /// 3.4). Nunca aparece para `type == .memorial` — não faz sentido sugerir presente para uma
+    /// data de falecimento/homenagem (T23). Nasceu em `ImportantDateFormView` (T23), mudou de
+    /// call site na T35 e foi movida para cá na T37 — regra de quando oferecer sugestão de
+    /// presente pertence ao serviço que a gera, não a uma view que nem a chama mais.
+    nonisolated static func showsGiftSuggestion(notes: String, type: DateType, isModelAvailable: Bool) -> Bool {
+        guard type != .memorial else { return false }
+        return isModelAvailable && !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     /// Sugestão de presente. Só faz sentido chamar com `notes` preenchido (a UI, na T11,
     /// só oferece o botão quando `notes` não é vazio) — aqui apenas montamos o prompt com o texto dado.
     func suggestGift(notes: String, relationship: Relationship?) async -> Result<GiftSuggestion, AISuggestionError> {

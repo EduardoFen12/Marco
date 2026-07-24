@@ -104,7 +104,7 @@ struct ImportantDateDetailView: View {
     private var aiSuggestionsSection: some View {
         Section("Sugestões de IA") {
             if aiService.isAvailable {
-                if ImportantDateFormView.showsGiftSuggestion(
+                if AISuggestionService.showsGiftSuggestion(
                     notes: importantDate.notes ?? "",
                     type: importantDate.type,
                     isModelAvailable: aiService.isAvailable
