@@ -5,6 +5,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct ImportantDateListView: View {
     @Environment(\.modelContext) private var modelContext
@@ -14,16 +15,43 @@ struct ImportantDateListView: View {
     @State private var isPresentingImport = false
     @State private var path = NavigationPath()
 
+    /// Lista abaixo do card de destaque (T33, mock Figma): exclui a data em destaque, que já
+    /// aparece no card — quando nenhuma data está destacada, `featuredDate` é `nil` e nada é
+    /// filtrado. `ForEach`/`onDelete` abaixo iteram sobre esta mesma coleção, então os índices
+    /// do `IndexSet` batem certinho com o item exibido.
     private var sortedDates: [ImportantDate] {
-        importantDates.sorted {
-            $0.daysUntilNextOccurrence() < $1.daysUntilNextOccurrence()
-        }
+        importantDates
+            .filter { $0.id != featuredDate?.id }
+            .sorted {
+                $0.daysUntilNextOccurrence() < $1.daysUntilNextOccurrence()
+            }
+    }
+
+    /// Data em destaque (T30) mostrada no card do topo; `nil` quando nenhuma data está marcada
+    /// (ex: recém-excluída) — nesse caso o card simplesmente não aparece.
+    private var featuredDate: ImportantDate? {
+        importantDates.first(where: \.isFeatured)
     }
 
     var body: some View {
         NavigationStack(path: $path) {
             List {
-                if sortedDates.isEmpty {
+                if let featuredDate {
+                    Button {
+                        path.append(featuredDate.id)
+                    } label: {
+                        FeaturedDateCard(importantDate: featuredDate)
+                    }
+                    .buttonStyle(.plain)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .contextMenu {
+                        markAsFeaturedButton(for: featuredDate)
+                    }
+                }
+
+                if importantDates.isEmpty {
                     ContentUnavailableView {
                         Label("Nenhuma data cadastrada", systemImage: "calendar.badge.plus")
                     } description: {
@@ -38,6 +66,9 @@ struct ImportantDateListView: View {
                         NavigationLink(value: importantDate.id) {
                             ImportantDateRow(importantDate: importantDate)
                         }
+                        .contextMenu {
+                            markAsFeaturedButton(for: importantDate)
+                        }
                     }
                     .onDelete(perform: delete)
                 }
@@ -47,14 +78,14 @@ struct ImportantDateListView: View {
                     ImportantDateDetailView(importantDate: importantDate)
                 }
             }
-            .navigationTitle("Datas importantes")
+            .navigationTitle("Marco")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
                         Button {
                             isPresentingNewDate = true
                         } label: {
-                            Label("Adicionar", systemImage: "plus")
+                            Label("Adicionar data", systemImage: "plus")
                         }
                         Button {
                             isPresentingImport = true
@@ -81,6 +112,17 @@ struct ImportantDateListView: View {
         }
     }
 
+    /// Ação de long press (T33): marca `importantDate` como destaque, desmarcando a anterior —
+    /// reusa o ponto único de escrita da exclusividade (`ImportantDate.markAsFeatured(in:)`, T30).
+    @ViewBuilder
+    private func markAsFeaturedButton(for importantDate: ImportantDate) -> some View {
+        Button {
+            importantDate.markAsFeatured(in: modelContext)
+        } label: {
+            Label("Marcar como destaque", systemImage: "star.fill")
+        }
+    }
+
     private func delete(at offsets: IndexSet) {
         for index in offsets {
             let importantDate = sortedDates[index]
@@ -90,6 +132,9 @@ struct ImportantDateListView: View {
             modelContext.delete(importantDate)
             NotificationService.cancel(importantDate)
         }
+        // Se a data excluída era a destacada, nenhuma outra assume o lugar automaticamente
+        // (comportamento explícito de T30/T33) — `featuredDate` volta a ser `nil` sozinho, já
+        // que ele é derivado de `importantDates` via `@Query`.
     }
 
     /// Deep-link da ação "Abrir para mensagem"/toque na notificação (T22): navega até o detalhe
@@ -102,12 +147,91 @@ struct ImportantDateListView: View {
     }
 }
 
+/// Card de destaque no topo da Home (T33, mock Figma "Minhas Datas (Home)"): foto de fundo
+/// (ou um preenchimento + ícone do tipo, quando `photoData` está vazio) com pill "DESTAQUE",
+/// nome/tipo/data e dias restantes sobrepostos.
+private struct FeaturedDateCard: View {
+    let importantDate: ImportantDate
+
+    private var dateLabel: String {
+        importantDate.date.formatted(.dateTime.day().month(.wide))
+    }
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            background
+            LinearGradient(
+                colors: [Color.black.opacity(0.65), Color.black.opacity(0)],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+            info
+        }
+        .overlay(alignment: .topLeading) { pill }
+        .frame(height: 220)
+        .clipShape(RoundedRectangle(cornerRadius: 32))
+    }
+
+    @ViewBuilder
+    private var background: some View {
+        if let photoData = importantDate.photoData, let uiImage = UIImage(data: photoData) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+        } else {
+            ZStack {
+                Color("MarcoDarkGreen")
+                Image(systemName: emptyStateIcon)
+                    .font(.system(size: 96))
+                    .foregroundStyle(Color("MarcoMint").opacity(0.35))
+            }
+        }
+    }
+
+    private var emptyStateIcon: String {
+        switch importantDate.type {
+        case .birthday: return "birthday.cake.fill"
+        case .commemorative: return "sparkles"
+        case .memorial: return "heart.fill"
+        }
+    }
+
+    private var pill: some View {
+        Text("DESTAQUE")
+            .font(.caption.bold())
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(Color("MarcoMint")))
+            .foregroundStyle(Color("MarcoDeepGreen"))
+            .padding(16)
+    }
+
+    private var info: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(importantDate.name)
+                .font(.title.bold())
+                .foregroundStyle(.white)
+            (Text(importantDate.type.displayName) + Text(" · ") + Text(dateLabel))
+                .font(.subheadline)
+                .foregroundStyle(.white.opacity(0.85))
+            Text(importantDate.daysRemainingLabel)
+                .font(.subheadline.bold())
+                .foregroundStyle(Color("MarcoMint"))
+        }
+        .padding(20)
+    }
+}
+
 /// Não-`private` para ser reaproveitada também por `SearchDatesView` (T27).
 struct ImportantDateRow: View {
     let importantDate: ImportantDate
 
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(importantDate.type.stripeColor)
+                .frame(width: 4)
+                .frame(maxHeight: .infinity)
             VStack(alignment: .leading, spacing: 2) {
                 Text(importantDate.name)
                     .font(.headline)
@@ -123,8 +247,8 @@ struct ImportantDateRow: View {
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(importantDate.daysRemainingLabel)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(Color("MarcoDarkGreen"))
                 if let eventTimeLabel = importantDate.eventTimeLabel {
                     Text(eventTimeLabel)
                         .font(.caption)
@@ -132,6 +256,7 @@ struct ImportantDateRow: View {
                 }
             }
         }
+        .padding(.vertical, 4)
     }
 }
 
@@ -171,6 +296,16 @@ extension DateType {
         case .birthday: return "Aniversário"
         case .commemorative: return "Comemorativa"
         case .memorial: return "Memorial"
+        }
+    }
+
+    /// Cor da stripe de categoria à esquerda da célula (T33) — usa apenas color sets do design
+    /// system (T29), sem hex hardcoded.
+    var stripeColor: Color {
+        switch self {
+        case .birthday: return Color("MarcosGreen")
+        case .commemorative: return Color("MarcoMint")
+        case .memorial: return Color("MarcoGray")
         }
     }
 }

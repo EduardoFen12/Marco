@@ -327,12 +327,12 @@
         }
       }
     },
-    "Datas importantes" : {
+    "DESTAQUE" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Important Dates"
+            "value" : "FEATURED"
           }
         }
       }
@@ -566,6 +566,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reminders"
+          }
+        }
+      }
+    },
+    "Marcar como destaque" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Featured"
+          }
+        }
+      }
+    },
+    "Marco" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marco"
           }
         }
       }
