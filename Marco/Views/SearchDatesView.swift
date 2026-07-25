@@ -24,7 +24,12 @@ struct SearchDatesView: View {
                 NavigationLink(value: importantDate.id) {
                     ImportantDateRow(importantDate: importantDate)
                 }
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
+            .scrollContentBackground(.hidden)
+            .background(Color("MarcoCream"))
             .navigationDestination(for: UUID.self) { id in
                 if let importantDate = importantDates.first(where: { $0.id == id }) {
                     ImportantDateDetailView(importantDate: importantDate)
