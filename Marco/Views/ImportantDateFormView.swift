@@ -191,6 +191,19 @@ struct ImportantDateFormView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 192)
             .clipShape(RoundedRectangle(cornerRadius: 32))
+            .overlay(alignment: .bottomLeading) {
+                // (T38, mock 24:61) Só faz sentido na criação — em edição a data já existe.
+                if importantDate == nil {
+                    Text("NOVO REGISTRO")
+                        .font(.caption2.bold())
+                        .kerning(0.5)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(Color("MarcoDeepGreen")))
+                        .foregroundStyle(.white)
+                        .padding(16)
+                }
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(photoData == nil ? Text("Adicionar foto") : Text("Trocar foto"))
@@ -209,37 +222,53 @@ struct ImportantDateFormView: View {
 
     private var identificationCard: some View {
         FormSectionCard(label: "Identificação") {
-            TextField("Nome", text: $name)
-                .textFieldStyle(.plain)
-                .padding(12)
-                .background(Color("MarcoCream"))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            HStack(spacing: 10) {
+                Image(systemName: "person")
+                    .foregroundStyle(Color("MarcoLabelSecondary"))
+                TextField("Nome", text: $name)
+                    .textFieldStyle(.plain)
+            }
+            .padding(12)
+            .background(Color("MarcoCream"))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 
     /// Mantém a lógica atual (T14): seletor completo de data para não-aniversário, dia/mês +
-    /// ano opcional (com idade calculada) para aniversário.
+    /// ano opcional (com idade calculada) para aniversário. Ícone + pill à direita (T38, mock
+    /// `24:61`) via `PillDatePicker` (ramo não-aniversário) e via o par de `Picker` (`.menu`,
+    /// ramo aniversário — T14 não usa `DatePicker` ali) estilizado com o mesmo fundo/cápsula.
     private var whenCard: some View {
         FormSectionCard(label: "Quando") {
             VStack(alignment: .leading, spacing: 12) {
                 if type == .birthday {
                     HStack(spacing: 12) {
-                        Picker("Mês", selection: $birthdayMonth) {
-                            ForEach(Array(Calendar.current.monthSymbols.enumerated()), id: \.offset) { index, symbol in
-                                Text(symbol.capitalized).tag(index + 1)
+                        FieldIconLabel(systemImage: "calendar", title: "Data", tint: Color("MarcosGreen"))
+                        Spacer()
+                        HStack(spacing: 2) {
+                            Picker("Mês", selection: $birthdayMonth) {
+                                ForEach(Array(Calendar.current.monthSymbols.enumerated()), id: \.offset) { index, symbol in
+                                    Text(symbol.capitalized).tag(index + 1)
+                                }
+                            }
+                            Picker("Dia", selection: $birthdayDay) {
+                                ForEach(Self.daysInBirthdayMonth(birthdayMonth), id: \.self) { day in
+                                    Text("\(day)").tag(day)
+                                }
                             }
                         }
-                        Picker("Dia", selection: $birthdayDay) {
-                            ForEach(Self.daysInBirthdayMonth(birthdayMonth), id: \.self) { day in
-                                Text("\(day)").tag(day)
+                        .pickerStyle(.menu)
+                        .tint(Color("MarcoDarkGreen"))
+                        .fixedSize()
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color("MarcoMint"))
+                        .clipShape(Capsule())
+                        .onChange(of: birthdayMonth) {
+                            let validDays = Self.daysInBirthdayMonth(birthdayMonth)
+                            if !validDays.contains(birthdayDay) {
+                                birthdayDay = validDays.last ?? 1
                             }
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .onChange(of: birthdayMonth) {
-                        let validDays = Self.daysInBirthdayMonth(birthdayMonth)
-                        if !validDays.contains(birthdayDay) {
-                            birthdayDay = validDays.last ?? 1
                         }
                     }
 
@@ -256,20 +285,34 @@ struct ImportantDateFormView: View {
                             .foregroundStyle(Color("MarcoLabelSecondary"))
                     }
                 } else {
-                    DatePicker("Data", selection: $date, displayedComponents: .date)
+                    HStack {
+                        FieldIconLabel(systemImage: "calendar", title: "Data", tint: Color("MarcosGreen"))
+                        Spacer()
+                        PillDatePicker(title: "Data", selection: $date, displayedComponents: .date)
+                    }
                 }
             }
         }
     }
 
     /// Horário do lembrete (T13) + toggle "Definir hora do evento" (T26) — ambos preservados.
+    /// Ícone + pill à direita (T38) igual ao `DatePicker` de "Quando".
     private var remindersCard: some View {
         FormSectionCard(label: "Lembretes") {
             VStack(alignment: .leading, spacing: 12) {
-                DatePicker("Hora do lembrete", selection: $notificationTime, displayedComponents: .hourAndMinute)
+                HStack {
+                    FieldIconLabel(systemImage: "bell", title: "Hora do lembrete")
+                    Spacer()
+                    PillDatePicker(title: "Hora do lembrete", selection: $notificationTime, displayedComponents: .hourAndMinute)
+                }
+
                 Toggle("Definir hora do evento", isOn: $hasEventTime)
                 if hasEventTime {
-                    DatePicker("Hora do evento", selection: $eventTime, displayedComponents: .hourAndMinute)
+                    HStack {
+                        FieldIconLabel(systemImage: "bell", title: "Hora do evento")
+                        Spacer()
+                        PillDatePicker(title: "Hora do evento", selection: $eventTime, displayedComponents: .hourAndMinute)
+                    }
                 }
             }
         }
@@ -316,12 +359,13 @@ struct ImportantDateFormView: View {
         }
     }
 
-    /// Botão "Salvar" do rodapé (T35) — mesma ação do `checkmark` do toolbar.
+    /// Botão "Salvar" do rodapé (T35) — mesma ação do `checkmark` do toolbar. Ícone à esquerda do
+    /// texto (T38, mock `24:61`).
     private var saveButton: some View {
         Button {
             save()
         } label: {
-            Text("Salvar")
+            Label("Salvar", systemImage: "square.and.arrow.down")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
@@ -399,8 +443,60 @@ private struct FormSectionCard<Content: View>: View {
     }
 }
 
+/// Ícone + texto usados como `label` das linhas "Data"/"Hora do lembrete"/"Hora do evento"
+/// (T38, mock `24:61`) — passada como `label` de `DatePicker`, que desenha o valor (o controle
+/// nativo) por conta própria à direita; esta view só cuida do ícone + texto à esquerda.
+private struct FieldIconLabel: View {
+    let systemImage: String
+    let title: LocalizedStringResource
+    var tint: Color = Color("MarcoLabelSecondary")
+
+    var body: some View {
+        Label {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color("MarcoLabel"))
+        } icon: {
+            Image(systemName: systemImage)
+                .foregroundStyle(tint)
+        }
+    }
+}
+
+/// `DatePicker` compacto embrulhado numa pill `MarcoMint` (T38, mock `24:61`), usado à direita
+/// das linhas "Data"/"Hora do lembrete"/"Hora do evento". **Não recria o controle**: continua
+/// sendo `DatePicker` + `.datePickerStyle(.compact)`, o mesmo seletor nativo de T13/T14/T26
+/// (teclado, acessibilidade, popover de calendário/roda intactos) — só com `.labelsHidden()`
+/// por cima, para a pill embrulhar visualmente só o valor (o `FieldIconLabel`, fora desta view,
+/// já repete o texto ao lado). O `title` continua passado ao `DatePicker` (não `EmptyView()`):
+/// `.labelsHidden()` só esconde o label visualmente, não o remove — é a partir dele que o
+/// VoiceOver deriva o nome do campo ("Data", "Hora do lembrete", "Hora do evento").
+///
+/// **Limite confirmado em runtime (não só na documentação):** o chip que o `.compact` desenha
+/// para o valor é um controle UIKit por baixo — o texto sempre sai preto e nem `.tint` nem
+/// `.foregroundStyle` mudam essa cor (testado lado a lado no simulador; sem efeito observável).
+/// Só o fundo por trás é estilizável, por isso a pill fica `MarcoMint`/texto preto em vez do
+/// texto `MarcoDarkGreen` do mock — o mais próximo possível sem recriar o seletor.
+private struct PillDatePicker: View {
+    let title: LocalizedStringResource
+    @Binding var selection: Date
+    let displayedComponents: DatePickerComponents
+
+    var body: some View {
+        DatePicker(title, selection: $selection, displayedComponents: displayedComponents)
+            .labelsHidden()
+            .datePickerStyle(.compact)
+            .tint(Color("MarcoDarkGreen"))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .background(Color("MarcoMint"))
+            .clipShape(Capsule())
+    }
+}
+
 /// Chip selecionável de `Relationship` (T35), incl. a opção "Nenhum" — substitui o `Picker`
-/// antigo por uma fileira de cápsulas roláveis horizontalmente.
+/// antigo; participa do `FlowLayout` de `relationshipCard`, que quebra os chips em várias
+/// linhas (T37) em vez de rolar horizontalmente.
 private struct RelationshipChip: View {
     let title: LocalizedStringResource
     let isSelected: Bool
