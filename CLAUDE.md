@@ -9,6 +9,7 @@ App iOS de datas importantes (aniversários, comemorativas, memoriais) com notif
 - iOS 26+ (mínimo para Foundation Models e App Intents atuais)
 - SwiftUI + SwiftData + UserNotifications + AppIntents + FoundationModels + PhotosUI (foto por data, Fase 3)
 - Testes: **fora de escopo.** Não escrever testes unitários (`MarcoTests`) nem testes de UI (`MarcoUITests`) — nenhum dos dois faz parte do fluxo. A verificação de uma task é: compilar sem erro + evidência em runtime do `sim-verifier` quando o critério de aceite exigir comportamento observável.
+- Dynamic Type em tamanhos de acessibilidade (`accessibility-medium` … `accessibility-extra-extra-extra-large`): **fora de escopo.** Não implementar ajustes de layout para essas categorias nem verificá-las (`simctl ui … content_size`). Os tamanhos padrão de Dynamic Type seguem funcionando por herança dos estilos nativos de fonte. Nenhum critério de aceite deve exigir suporte a fontes de acessibilidade. Ver a decisão registrada na seção 7 da SPEC.md.
 - Strings de UI em pt-BR
 
 ## Build
