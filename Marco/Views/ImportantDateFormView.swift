@@ -236,11 +236,8 @@ struct ImportantDateFormView: View {
 
     /// Mantém a lógica atual (T14): seletor completo de data para não-aniversário, dia/mês +
     /// ano opcional (com idade calculada) para aniversário. Ícone + pill à direita (T38, mock
-    /// `24:61`): o `DatePicker` (ramo não-aniversário) usa `.datePickerStyle(.compact)`, que já
-    /// renderiza o valor como um controle compacto de fundo próprio à direita do label — só
-    /// precisou de `.tint` para a paleta, sem recriar o seletor (preserva teclado/acessibilidade/
-    /// popover nativo, T13/T14/T26). O ramo aniversário não tem `DatePicker` (T14: só
-    /// mês/dia + ano), então a "pill" ali é o par de `Picker` (`.menu`) estilizado manualmente.
+    /// `24:61`) via `PillDatePicker` (ramo não-aniversário) e via o par de `Picker` (`.menu`,
+    /// ramo aniversário — T14 não usa `DatePicker` ali) estilizado com o mesmo fundo/cápsula.
     private var whenCard: some View {
         FormSectionCard(label: "Quando") {
             VStack(alignment: .leading, spacing: 12) {
@@ -262,6 +259,7 @@ struct ImportantDateFormView: View {
                         }
                         .pickerStyle(.menu)
                         .tint(Color("MarcoDarkGreen"))
+                        .fixedSize()
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(Color("MarcoMint"))
@@ -287,11 +285,11 @@ struct ImportantDateFormView: View {
                             .foregroundStyle(Color("MarcoLabelSecondary"))
                     }
                 } else {
-                    DatePicker(selection: $date, displayedComponents: .date) {
+                    HStack {
                         FieldIconLabel(systemImage: "calendar", title: "Data", tint: Color("MarcosGreen"))
+                        Spacer()
+                        PillDatePicker(selection: $date, displayedComponents: .date)
                     }
-                    .datePickerStyle(.compact)
-                    .tint(Color("MarcoDarkGreen"))
                 }
             }
         }
@@ -302,19 +300,19 @@ struct ImportantDateFormView: View {
     private var remindersCard: some View {
         FormSectionCard(label: "Lembretes") {
             VStack(alignment: .leading, spacing: 12) {
-                DatePicker(selection: $notificationTime, displayedComponents: .hourAndMinute) {
+                HStack {
                     FieldIconLabel(systemImage: "bell", title: "Hora do lembrete")
+                    Spacer()
+                    PillDatePicker(selection: $notificationTime, displayedComponents: .hourAndMinute)
                 }
-                .datePickerStyle(.compact)
-                .tint(Color("MarcoDarkGreen"))
 
                 Toggle("Definir hora do evento", isOn: $hasEventTime)
                 if hasEventTime {
-                    DatePicker(selection: $eventTime, displayedComponents: .hourAndMinute) {
+                    HStack {
                         FieldIconLabel(systemImage: "bell", title: "Hora do evento")
+                        Spacer()
+                        PillDatePicker(selection: $eventTime, displayedComponents: .hourAndMinute)
                     }
-                    .datePickerStyle(.compact)
-                    .tint(Color("MarcoDarkGreen"))
                 }
             }
         }
@@ -462,6 +460,36 @@ private struct FieldIconLabel: View {
             Image(systemName: systemImage)
                 .foregroundStyle(tint)
         }
+    }
+}
+
+/// `DatePicker` compacto embrulhado numa pill `MarcoMint` (T38, mock `24:61`), usado à direita
+/// das linhas "Data"/"Hora do lembrete"/"Hora do evento". **Não recria o controle**: continua
+/// sendo `DatePicker` + `.datePickerStyle(.compact)`, o mesmo seletor nativo de T13/T14/T26
+/// (teclado, acessibilidade, popover de calendário/roda intactos) — só com `.labelsHidden()`
+/// (o texto do campo já vem de `FieldIconLabel`, fora desta view, para a pill embrulhar só o
+/// valor) e fundo/cápsula próprios por cima.
+///
+/// **Limite confirmado em runtime (não só na documentação):** o chip que o `.compact` desenha
+/// para o valor é um controle UIKit por baixo — o texto sempre sai preto e nem `.tint` nem
+/// `.foregroundStyle` mudam essa cor (testado lado a lado no simulador; sem efeito observável).
+/// Só o fundo por trás é estilizável, por isso a pill fica `MarcoMint`/texto preto em vez do
+/// texto `MarcoDarkGreen` do mock — o mais próximo possível sem recriar o seletor.
+private struct PillDatePicker: View {
+    @Binding var selection: Date
+    let displayedComponents: DatePickerComponents
+
+    var body: some View {
+        DatePicker(selection: $selection, displayedComponents: displayedComponents) {
+            EmptyView()
+        }
+        .labelsHidden()
+        .datePickerStyle(.compact)
+        .tint(Color("MarcoDarkGreen"))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 2)
+        .background(Color("MarcoMint"))
+        .clipShape(Capsule())
     }
 }
 
