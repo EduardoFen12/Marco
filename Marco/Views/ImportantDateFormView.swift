@@ -288,7 +288,7 @@ struct ImportantDateFormView: View {
                     HStack {
                         FieldIconLabel(systemImage: "calendar", title: "Data", tint: Color("MarcosGreen"))
                         Spacer()
-                        PillDatePicker(selection: $date, displayedComponents: .date)
+                        PillDatePicker(title: "Data", selection: $date, displayedComponents: .date)
                     }
                 }
             }
@@ -303,7 +303,7 @@ struct ImportantDateFormView: View {
                 HStack {
                     FieldIconLabel(systemImage: "bell", title: "Hora do lembrete")
                     Spacer()
-                    PillDatePicker(selection: $notificationTime, displayedComponents: .hourAndMinute)
+                    PillDatePicker(title: "Hora do lembrete", selection: $notificationTime, displayedComponents: .hourAndMinute)
                 }
 
                 Toggle("Definir hora do evento", isOn: $hasEventTime)
@@ -311,7 +311,7 @@ struct ImportantDateFormView: View {
                     HStack {
                         FieldIconLabel(systemImage: "bell", title: "Hora do evento")
                         Spacer()
-                        PillDatePicker(selection: $eventTime, displayedComponents: .hourAndMinute)
+                        PillDatePicker(title: "Hora do evento", selection: $eventTime, displayedComponents: .hourAndMinute)
                     }
                 }
             }
@@ -467,8 +467,10 @@ private struct FieldIconLabel: View {
 /// das linhas "Data"/"Hora do lembrete"/"Hora do evento". **Não recria o controle**: continua
 /// sendo `DatePicker` + `.datePickerStyle(.compact)`, o mesmo seletor nativo de T13/T14/T26
 /// (teclado, acessibilidade, popover de calendário/roda intactos) — só com `.labelsHidden()`
-/// (o texto do campo já vem de `FieldIconLabel`, fora desta view, para a pill embrulhar só o
-/// valor) e fundo/cápsula próprios por cima.
+/// por cima, para a pill embrulhar visualmente só o valor (o `FieldIconLabel`, fora desta view,
+/// já repete o texto ao lado). O `title` continua passado ao `DatePicker` (não `EmptyView()`):
+/// `.labelsHidden()` só esconde o label visualmente, não o remove — é a partir dele que o
+/// VoiceOver deriva o nome do campo ("Data", "Hora do lembrete", "Hora do evento").
 ///
 /// **Limite confirmado em runtime (não só na documentação):** o chip que o `.compact` desenha
 /// para o valor é um controle UIKit por baixo — o texto sempre sai preto e nem `.tint` nem
@@ -476,20 +478,19 @@ private struct FieldIconLabel: View {
 /// Só o fundo por trás é estilizável, por isso a pill fica `MarcoMint`/texto preto em vez do
 /// texto `MarcoDarkGreen` do mock — o mais próximo possível sem recriar o seletor.
 private struct PillDatePicker: View {
+    let title: LocalizedStringResource
     @Binding var selection: Date
     let displayedComponents: DatePickerComponents
 
     var body: some View {
-        DatePicker(selection: $selection, displayedComponents: displayedComponents) {
-            EmptyView()
-        }
-        .labelsHidden()
-        .datePickerStyle(.compact)
-        .tint(Color("MarcoDarkGreen"))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 2)
-        .background(Color("MarcoMint"))
-        .clipShape(Capsule())
+        DatePicker(title, selection: $selection, displayedComponents: displayedComponents)
+            .labelsHidden()
+            .datePickerStyle(.compact)
+            .tint(Color("MarcoDarkGreen"))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .background(Color("MarcoMint"))
+            .clipShape(Capsule())
     }
 }
 
