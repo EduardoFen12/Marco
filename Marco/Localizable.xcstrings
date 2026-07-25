@@ -110,6 +110,9 @@
         }
       }
     },
+    "Adicionar Marco" : {
+
+    },
     "Adicionei %@." : {
       "localizations" : {
         "en" : {
@@ -239,6 +242,9 @@
           }
         }
       }
+    },
+    "Categoria" : {
+
     },
     "Colega" : {
       "localizations" : {
@@ -533,6 +539,9 @@
         }
       }
     },
+    "Identificação" : {
+
+    },
     "Importar" : {
       "localizations" : {
         "en" : {
@@ -564,6 +573,7 @@
       }
     },
     "Informações" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -704,6 +714,7 @@
       }
     },
     "Notas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -752,6 +763,9 @@
           }
         }
       }
+    },
+    "Quando" : {
+
     },
     "Quando é a data?" : {
       "localizations" : {
@@ -876,7 +890,11 @@
         }
       }
     },
+    "Toque em + para adicionar uma data importante" : {
+
+    },
     "Toque em + para adicionar uma data importante." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
