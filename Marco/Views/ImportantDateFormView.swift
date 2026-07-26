@@ -422,27 +422,6 @@ struct ImportantDateFormView: View {
     }
 }
 
-/// Card de seção com label estática acima do card (T37, conferido contra o mock Figma `24:61`):
-/// título pequeno e discreto em *sentence case*, fora do container com fundo/clip — usado por
-/// todas as seções do form ("Identificação", "Quando", "Lembretes", "Categoria",
-/// "Relacionamento", "Anotações"). Não é floating label animado estilo Material.
-private struct FormSectionCard<Content: View>: View {
-    let label: LocalizedStringResource
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label)
-                .font(.caption.bold())
-                .foregroundStyle(Color("MarcoLabelSecondary"))
-            content
-                .padding(16)
-                .background(Color("MarcoCardFill"))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-        }
-    }
-}
-
 /// Ícone + texto usados como `label` das linhas "Data"/"Hora do lembrete"/"Hora do evento"
 /// (T38, mock `24:61`) — passada como `label` de `DatePicker`, que desenha o valor (o controle
 /// nativo) por conta própria à direita; esta view só cuida do ícone + texto à esquerda.

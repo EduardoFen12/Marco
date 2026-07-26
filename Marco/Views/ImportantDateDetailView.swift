@@ -12,7 +12,12 @@ import FoundationModels
 /// (lista, destaque, busca). Edição só acontece via botão `pencil` da toolbar, que empurra
 /// `ImportantDateFormView`. As sugestões de IA (T11/T23) são reaproveitadas aqui a partir do
 /// mesmo `AISuggestionService`, sem duplicar a lógica de disponibilidade/erro do serviço.
+///
+/// Redesenho T40 (mock Figma "Detalhe da Data (IA)" `24:159`): `ScrollView` + `VStack` de cards
+/// (`FormSectionCard`, promovido do form na T37) sobre `MarcoCream`, no mesmo vocabulário visual
+/// de T37–T39.
 struct ImportantDateDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var aiService = AISuggestionService()
 
     let importantDate: ImportantDate
@@ -22,45 +27,71 @@ struct ImportantDateDetailView: View {
     @State private var isGeneratingMessage = false
     @State private var messageResult: Result<String, AISuggestionError>?
 
-    private var dateLabel: String {
-        importantDate.date.formatted(.dateTime.day().month(.wide))
+    /// "31 de Maio • Faz 24 anos" — data + idade numa única linha (T40), no mesmo padrão que
+    /// `ImportantDateRow.subtitle` usa (`ImportantDateListView`), sem a hora do evento (que já
+    /// tem sua própria linha no card "Lembretes" abaixo).
+    private var dateAgeLine: Text {
+        var text = Text(importantDate.dateLabel)
+        if let ageLabel = ImportantDate.ageLabel(forAge: importantDate.age()) {
+            text = text + Text(" • ") + Text(ageLabel)
+        }
+        return text
+    }
+
+    private var showsGiftSuggestion: Bool {
+        AISuggestionService.showsGiftSuggestion(
+            notes: importantDate.notes ?? "",
+            type: importantDate.type,
+            isModelAvailable: aiService.isAvailable
+        )
     }
 
     var body: some View {
-        List {
-            Section {
+        ScrollView {
+            VStack(spacing: 20) {
                 header
-            }
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(Color.clear)
 
-            if let notes = importantDate.notes, !notes.isEmpty {
-                Section("Anotações") {
-                    Text(notes)
+                if let notes = importantDate.notes, !notes.isEmpty {
+                    FormSectionCard(label: "Anotações") {
+                        Text(notes)
+                    }
                 }
-            }
 
-            aiSuggestionsSection
+                aiSuggestionsCard
 
-            Section("Lembretes") {
-                LabeledContent("Hora do lembrete", value: Self.timeLabel(
-                    hour: importantDate.notificationHour,
-                    minute: importantDate.notificationMinute
-                ))
-                if let eventHour = importantDate.eventHour, let eventMinute = importantDate.eventMinute {
-                    LabeledContent("Hora do evento", value: Self.timeLabel(hour: eventHour, minute: eventMinute))
-                }
+                remindersCard
             }
+            .padding(.horizontal)
+            .padding(.bottom, 24)
         }
+        .background(Color("MarcoCream").ignoresSafeArea())
         .navigationTitle(importantDate.name)
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .fontWeight(.semibold)
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color("MarcoCardFill")))
+                        .foregroundStyle(Color("MarcoLabel"))
+                }
+                .accessibilityLabel(Text("Voltar"))
+            }
             ToolbarItem(placement: .primaryAction) {
                 NavigationLink {
                     ImportantDateFormView(importantDate: importantDate)
                 } label: {
-                    Label("Editar", systemImage: "pencil")
+                    Image(systemName: "pencil")
+                        .fontWeight(.semibold)
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color("MarcosGreen")))
+                        .foregroundStyle(.white)
                 }
+                .accessibilityLabel(Text("Editar"))
             }
         }
         // Empurrada a partir da Home (T36, mock Figma): esconde a tab bar, já que esta tela
@@ -72,22 +103,22 @@ struct ImportantDateDetailView: View {
         VStack(spacing: 16) {
             CountdownRingView(
                 daysRemaining: importantDate.daysUntilNextOccurrence(),
-                daysLabel: importantDate.daysRemainingLabel
+                accessibilityLabel: importantDate.daysRemainingLabel
             )
-            VStack(spacing: 4) {
+            VStack(spacing: 8) {
                 Text(importantDate.name)
-                    .font(.title2.bold())
-                Text(importantDate.type.displayName)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Text(dateLabel)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                if let ageLabel = ImportantDate.ageLabel(forAge: importantDate.age()) {
-                    Text(ageLabel)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(Color("MarcoLabel"))
+                Label {
+                    Text(importantDate.type.displayName)
+                } icon: {
+                    Image(systemName: importantDate.type.symbolName)
                 }
+                .font(.subheadline)
+                .foregroundStyle(Color("MarcoLabelSecondary"))
+                dateAgeLine
+                    .font(.subheadline)
+                    .foregroundStyle(Color("MarcoLabelSecondary"))
             }
         }
         .frame(maxWidth: .infinity)
@@ -98,47 +129,64 @@ struct ImportantDateDetailView: View {
         String(format: "%02d:%02d", hour, minute)
     }
 
+    private var remindersCard: some View {
+        FormSectionCard(label: "Lembretes") {
+            VStack(alignment: .leading, spacing: 12) {
+                LabeledContent("Hora do lembrete", value: Self.timeLabel(
+                    hour: importantDate.notificationHour,
+                    minute: importantDate.notificationMinute
+                ))
+                if let eventHour = importantDate.eventHour, let eventMinute = importantDate.eventMinute {
+                    LabeledContent("Hora do evento", value: Self.timeLabel(hour: eventHour, minute: eventMinute))
+                }
+            }
+        }
+    }
+
     // MARK: - Sugestões de IA (reaproveita AISuggestionService, T10/T11/T23)
 
-    @ViewBuilder
-    private var aiSuggestionsSection: some View {
-        Section("Sugestões de IA") {
+    private var aiSuggestionsCard: some View {
+        FormSectionCard(label: "Sugestões de IA", systemImage: "sparkles") {
             if aiService.isAvailable {
-                if AISuggestionService.showsGiftSuggestion(
-                    notes: importantDate.notes ?? "",
-                    type: importantDate.type,
-                    isModelAvailable: aiService.isAvailable
-                ) {
-                    Button {
-                        Task { await suggestGift() }
-                    } label: {
-                        if isSuggestingGift {
-                            ProgressView()
-                        } else {
-                            Label("Sugerir presente", systemImage: "gift")
-                        }
+                VStack(alignment: .leading, spacing: 16) {
+                    aiActionButtons
+                    if showsGiftSuggestion {
+                        aiResultView(for: giftResult, title: "Sugestão de presente") { "\($0.title)\n\n\($0.rationale)" }
                     }
-                    .disabled(isSuggestingGift)
-
-                    aiResultView(for: giftResult) { "\($0.title)\n\n\($0.rationale)" }
+                    aiResultView(for: messageResult, title: "Mensagem sugerida") { $0 }
                 }
-
-                Button {
-                    Task { await generateMessage() }
-                } label: {
-                    if isGeneratingMessage {
-                        ProgressView()
-                    } else {
-                        Label("Gerar mensagem", systemImage: "text.bubble")
-                    }
-                }
-                .disabled(isGeneratingMessage)
-
-                aiResultView(for: messageResult) { $0 }
             } else {
                 Text(unavailableExplanation)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    /// Os dois botões de IA como cards lado a lado, ícone em cima e rótulo em caps embaixo
+    /// (T40). Quando "Sugerir presente" está escondido (`.memorial`), "Gerar mensagem" ocupa a
+    /// largura toda.
+    private var aiActionButtons: some View {
+        HStack(spacing: 12) {
+            if showsGiftSuggestion {
+                AIActionButton(
+                    systemImage: "gift",
+                    title: "SUGERIR PRESENTE",
+                    background: Color("MarcosGreen"),
+                    foreground: .white,
+                    isLoading: isSuggestingGift
+                ) {
+                    Task { await suggestGift() }
+                }
+            }
+            AIActionButton(
+                systemImage: "text.bubble",
+                title: "GERAR MENSAGEM",
+                background: Color("MarcoMint"),
+                foreground: Color("MarcoDarkGreen"),
+                isLoading: isGeneratingMessage
+            ) {
+                Task { await generateMessage() }
             }
         }
     }
@@ -169,10 +217,14 @@ struct ImportantDateDetailView: View {
     }
 
     @ViewBuilder
-    private func aiResultView<T>(for result: Result<T, AISuggestionError>?, text: (T) -> String) -> some View {
+    private func aiResultView<T>(
+        for result: Result<T, AISuggestionError>?,
+        title: LocalizedStringResource,
+        text: (T) -> String
+    ) -> some View {
         switch result {
         case .success(let value):
-            AIResultView(text: text(value))
+            AIResultView(title: title, text: text(value))
         case .failure(let error):
             Text(error.errorDescription ?? String(localized: "Não foi possível gerar o conteúdo."))
                 .font(.footnote)
@@ -183,12 +235,16 @@ struct ImportantDateDetailView: View {
     }
 }
 
-/// Anel de contagem regressiva com os dias até a próxima ocorrência (T32/mock Figma
-/// "Detalhe da Data (IA)"). Progresso ilustrativo (preenche conforme a data se aproxima ao
-/// longo de um ano) — não é uma medida de precisão, só uma pista visual.
+/// Anel de contagem regressiva com os dias até a próxima ocorrência (T32/T40, mock Figma
+/// "Detalhe da Data (IA)" `24:159`) — maior e mais grosso que o original, em `MarcoDarkGreen`.
+/// Progresso ilustrativo (preenche conforme a data se aproxima ao longo de um ano) — não é uma
+/// medida de precisão, só uma pista visual.
 private struct CountdownRingView: View {
     let daysRemaining: Int
-    let daysLabel: LocalizedStringResource
+    /// Rótulo anunciado pelo VoiceOver ("Faltam 21 dias"/"Hoje"/"Amanhã") — o texto visual do
+    /// anel mostra só o número + "DIAS" (T40 fix, mesmo padrão de `ImportantDateRow`), então o
+    /// anel precisa desse rótulo à parte para não soar "21, DIAS" solto.
+    let accessibilityLabel: LocalizedStringResource
 
     private var progress: Double {
         let clamped = min(max(daysRemaining, 0), 365)
@@ -198,42 +254,104 @@ private struct CountdownRingView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color("MarcoGray").opacity(0.4), lineWidth: 10)
+                .stroke(Color("MarcoGray").opacity(0.4), lineWidth: 18)
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(Color("MarcoDarkGreen"), style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                .stroke(Color("MarcoDarkGreen"), style: StrokeStyle(lineWidth: 18, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             VStack(spacing: 4) {
-                Text("\(daysRemaining)")
-                    .font(.system(.largeTitle, design: .rounded).bold())
-                Text(daysLabel)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text(daysRemaining, format: .number)
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color("MarcoDarkGreen"))
+                Text("DIAS")
+                    .font(.caption.bold())
+                    .tracking(1)
+                    .foregroundStyle(Color("MarcoDarkGreen"))
             }
         }
-        .frame(width: 140, height: 140)
+        .frame(width: 200, height: 200)
         .animation(.default, value: progress)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(accessibilityLabel))
+    }
+}
+
+/// Card de ação de IA (T40): ícone em cima, rótulo em caps embaixo, largura flexível para os dois
+/// botões (ou só um, quando "Sugerir presente" está escondido) dividirem o espaço disponível.
+private struct AIActionButton: View {
+    let systemImage: String
+    let title: LocalizedStringResource
+    let background: Color
+    let foreground: Color
+    let isLoading: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                if isLoading {
+                    ProgressView()
+                        .tint(foreground)
+                } else {
+                    Image(systemName: systemImage)
+                        .font(.title2)
+                }
+                Text(title)
+                    .font(.caption.bold())
+                    .tracking(0.5)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(background)
+            .foregroundStyle(foreground)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+        }
+        .buttonStyle(.plain)
+        .disabled(isLoading)
     }
 }
 
 /// Exibe o texto gerado pela IA com opção de copiar para a área de transferência — mesmo
-/// comportamento do form (T11), reaproveitado aqui porque o componente lá é `private`.
+/// comportamento do form (T11). Card `MarcoCardFill` com ícone de lâmpada em círculo à esquerda
+/// do título e botão de copiar (só ícone) no canto superior direito (T40, mock `24:159`) —
+/// **sem imagem de produto** (decisão da seção 3.9, deliberadamente ignorada aqui).
 private struct AIResultView: View {
+    let title: LocalizedStringResource
     let text: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 10) {
+                ZStack {
+                    Circle().fill(Color("MarcoMint"))
+                    Image(systemName: "lightbulb.fill")
+                        .foregroundStyle(Color("MarcoDarkGreen"))
+                }
+                .frame(width: 36, height: 36)
+
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(Color("MarcoLabel"))
+
+                Spacer()
+
+                Button {
+                    UIPasteboard.general.string = text
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color("MarcoLabelSecondary"))
+                .accessibilityLabel(Text("Copiar"))
+            }
             Text(text)
                 .font(.callout)
-            Button {
-                UIPasteboard.general.string = text
-            } label: {
-                Label("Copiar", systemImage: "doc.on.doc")
-            }
-            .font(.footnote)
-            .buttonStyle(.borderless)
+                .foregroundStyle(Color("MarcoLabel"))
         }
-        .padding(.vertical, 4)
+        .padding(16)
+        .background(Color("MarcoCardFill"))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
     }
 }
 

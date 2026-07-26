@@ -436,6 +436,16 @@ extension DateType {
         case .memorial: return Color("MarcoGray")
         }
     }
+
+    /// SF Symbol da categoria (T40, mock `24:159`, linha do tipo no header do Detalhe): `heart`
+    /// para aniversário, `star` para comemorativa, `leaf` para memorial.
+    var symbolName: String {
+        switch self {
+        case .birthday: return "heart"
+        case .commemorative: return "star"
+        case .memorial: return "leaf"
+        }
+    }
 }
 
 extension Relationship {
