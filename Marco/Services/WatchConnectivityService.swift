@@ -62,6 +62,7 @@ private extension WatchDateKind {
         case .birthday: self = .birthday
         case .commemorative: self = .commemorative
         case .memorial: self = .memorial
+        case .appointment: self = .appointment
         }
     }
 }

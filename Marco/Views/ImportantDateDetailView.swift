@@ -33,7 +33,7 @@ struct ImportantDateDetailView: View {
     private var dateAgeLine: Text {
         var text = Text(importantDate.dateLabel)
         if let ageLabel = ImportantDate.ageLabel(forAge: importantDate.age()) {
-            text = text + Text(" • ") + Text(ageLabel)
+            text = Text("\(text) • \(ageLabel)")
         }
         return text
     }
@@ -52,12 +52,16 @@ struct ImportantDateDetailView: View {
                 header
 
                 if let notes = importantDate.notes, !notes.isEmpty {
-                    FormSectionCard(label: "Anotações") {
+                    FormSectionCard(label: "Anotações", isProminent: true) {
+                        // Altura mínima de 3 linhas, crescendo com o texto — mesmo tratamento do
+                        // campo de notas no form (`lineLimit(4...8)`).
                         Text(notes)
+                            .lineLimit(3...)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
                     }
                 }
 
-                aiSuggestionsCard
+                aiSuggestionsSection
 
                 remindersCard
             }
@@ -75,22 +79,19 @@ struct ImportantDateDetailView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .fontWeight(.semibold)
-                        .frame(width: 36, height: 36)
-                        .background(Circle().fill(Color("MarcoCardFill")))
                         .foregroundStyle(Color("MarcoLabel"))
                 }
                 .accessibilityLabel(Text("Voltar"))
             }
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .confirmationAction) {
                 NavigationLink {
                     ImportantDateFormView(importantDate: importantDate)
                 } label: {
                     Image(systemName: "pencil")
                         .fontWeight(.semibold)
-                        .frame(width: 36, height: 36)
-                        .background(Circle().fill(Color("MarcosGreen")))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.marcosGreen)
                 }
+                .accentColor(.marcosGreen)
                 .accessibilityLabel(Text("Editar"))
             }
         }
@@ -100,7 +101,7 @@ struct ImportantDateDetailView: View {
     }
 
     private var header: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 28) {
             CountdownRingView(
                 daysRemaining: importantDate.daysUntilNextOccurrence(),
                 accessibilityLabel: importantDate.daysRemainingLabel
@@ -130,7 +131,7 @@ struct ImportantDateDetailView: View {
     }
 
     private var remindersCard: some View {
-        FormSectionCard(label: "Lembretes") {
+        FormSectionCard(label: "Lembretes", isProminent: true) {
             VStack(alignment: .leading, spacing: 12) {
                 LabeledContent("Hora do lembrete", value: Self.timeLabel(
                     hour: importantDate.notificationHour,
@@ -145,22 +146,25 @@ struct ImportantDateDetailView: View {
 
     // MARK: - Sugestões de IA (reaproveita AISuggestionService, T10/T11/T23)
 
-    private var aiSuggestionsCard: some View {
-        FormSectionCard(label: "Sugestões de IA", systemImage: "sparkles") {
+    /// Diferente das demais seções, esta não é um `FormSectionCard`: no mock `24:159` os dois
+    /// botões ficam soltos sobre o fundo e cada resultado gerado é o seu próprio card, em vez de
+    /// tudo dentro de um container só.
+    private var aiSuggestionsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            SectionLabel(text: "Sugestões de IA", systemImage: "sparkles", isProminent: true)
             if aiService.isAvailable {
-                VStack(alignment: .leading, spacing: 16) {
-                    aiActionButtons
-                    if showsGiftSuggestion {
-                        aiResultView(for: giftResult, title: "Sugestão de presente") { "\($0.title)\n\n\($0.rationale)" }
-                    }
-                    aiResultView(for: messageResult, title: "Mensagem sugerida") { $0 }
+                aiActionButtons
+                if showsGiftSuggestion {
+                    aiResultView(for: giftResult, title: "Sugestão de presente") { "\($0.title)\n\n\($0.rationale)" }
                 }
+                aiResultView(for: messageResult, title: "Mensagem sugerida") { $0 }
             } else {
                 Text(unavailableExplanation)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// Os dois botões de IA como cards lado a lado, ícone em cima e rótulo em caps embaixo
@@ -171,7 +175,7 @@ struct ImportantDateDetailView: View {
             if showsGiftSuggestion {
                 AIActionButton(
                     systemImage: "gift",
-                    title: "SUGERIR PRESENTE",
+                    title: "SUGERIR\nPRESENTE",
                     background: Color("MarcosGreen"),
                     foreground: .white,
                     isLoading: isSuggestingGift
@@ -181,7 +185,7 @@ struct ImportantDateDetailView: View {
             }
             AIActionButton(
                 systemImage: "text.bubble",
-                title: "GERAR MENSAGEM",
+                title: "GERAR\nMENSAGEM",
                 background: Color("MarcoMint"),
                 foreground: Color("MarcoDarkGreen"),
                 isLoading: isGeneratingMessage
@@ -276,8 +280,9 @@ private struct CountdownRingView: View {
     }
 }
 
-/// Card de ação de IA (T40): ícone em cima, rótulo em caps embaixo, largura flexível para os dois
-/// botões (ou só um, quando "Sugerir presente" está escondido) dividirem o espaço disponível.
+/// Card de ação de IA (T40): ícone em cima, rótulo em caps embaixo (quebrado em duas linhas pelo
+/// `\n` do próprio título, como no mock `24:159`), largura flexível para os dois botões (ou só um,
+/// quando "Sugerir presente" está escondido) dividirem o espaço disponível.
 private struct AIActionButton: View {
     let systemImage: String
     let title: LocalizedStringResource
@@ -299,9 +304,10 @@ private struct AIActionButton: View {
                 Text(title)
                     .font(.caption.bold())
                     .tracking(0.5)
+                    .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
+            .padding(.vertical, 24)
             .background(background)
             .foregroundStyle(foreground)
             .clipShape(RoundedRectangle(cornerRadius: 20))

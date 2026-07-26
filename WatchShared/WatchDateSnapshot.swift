@@ -13,16 +13,17 @@ enum WatchDateKind: String, Codable {
     case birthday
     case commemorative
     case memorial
+    case appointment
 
-    /// Espelha `DateType.symbolName` (`Marco/Views/ImportantDateListView.swift`) — mesmo símbolo
-    /// por categoria em iOS e watchOS (T41). Antes desta task, este enum usava um mapeamento
-    /// próprio (`birthday.cake`/`star`/`flame`), divergente do app (achado registrado na SPEC
-    /// seção 7).
+    /// Espelha `DateType.symbolName` (`Shared/DateType.swift`) — mesmo símbolo por categoria em
+    /// iOS e watchOS (T41). Antes da T41, este enum usava um mapeamento próprio, divergente do app
+    /// (achado registrado na SPEC seção 7).
     var symbolName: String {
         switch self {
-        case .birthday: "heart"
-        case .commemorative: "star"
-        case .memorial: "leaf"
+        case .birthday: "birthday.cake.fill"
+        case .commemorative: "party.popper.fill"
+        case .memorial: "leaf.fill"
+        case .appointment: "calendar.badge.clock"
         }
     }
 
@@ -36,6 +37,7 @@ enum WatchDateKind: String, Codable {
         case .birthday: Color("MarcosGreen")
         case .commemorative: Color("MarcoDarkGreen")
         case .memorial: Color("MarcoGray")
+        case .appointment: Color("MarcoDeepGreen")
         }
     }
 }

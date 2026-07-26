@@ -150,9 +150,14 @@ final class AISuggestionService {
             Relação com essa pessoa: \(relationshipLabel(relationship)). \(contexto)
             Evite clichês, foque em acolhimento.
             """
-        case .birthday, .commemorative:
+        case .birthday, .commemorative, .appointment:
+            let ocasiao = switch type {
+            case .birthday: "aniversário"
+            case .appointment: "compromisso"
+            default: "data comemorativa"
+            }
             return """
-            Escreva uma mensagem curta, \(idioma), para \(name) na ocasião: \(type == .birthday ? "aniversário" : "data comemorativa").
+            Escreva uma mensagem curta, \(idioma), para \(name) na ocasião: \(ocasiao).
             Relação com essa pessoa: \(relationshipLabel(relationship)). Use tom \(tone(for: relationship)). \(contexto)
             """
         }

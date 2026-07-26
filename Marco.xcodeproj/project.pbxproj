@@ -291,9 +291,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				1BFBC3F0E53C225D7EA80F50 /* DesignSystem */,
 				BD3BEBCB1C4B8CCD66FFEE97 /* Shared */,
 				FD3DE665EA1C386053AA8933 /* MarcoWidgets */,
-				1BFBC3F0E53C225D7EA80F50 /* DesignSystem */,
 			);
 			name = MarcoWidgets;
 			productName = MarcoWidgets;
@@ -315,9 +315,9 @@
 				A837081AF3D7055FE5B3755B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				1BFBC3F0E53C225D7EA80F50 /* DesignSystem */,
 				F5F0570936863406515837FE /* MarcoWatch */,
 				F7E2C77DB99DDDAE2285EEE2 /* WatchShared */,
-				1BFBC3F0E53C225D7EA80F50 /* DesignSystem */,
 			);
 			name = MarcoWatch;
 			productName = MarcoWatch;
@@ -341,10 +341,10 @@
 				6B6FF2D9C918E0CDF98A3720 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				1BFBC3F0E53C225D7EA80F50 /* DesignSystem */,
 				A04598743009743E00EFFE38 /* Marco */,
 				BD3BEBCB1C4B8CCD66FFEE97 /* Shared */,
 				F7E2C77DB99DDDAE2285EEE2 /* WatchShared */,
-				1BFBC3F0E53C225D7EA80F50 /* DesignSystem */,
 			);
 			name = Marco;
 			productName = Marco;
@@ -406,9 +406,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				1BFBC3F0E53C225D7EA80F50 /* DesignSystem */,
 				E1D5E8241774ACE22E53B677 /* MarcoWatchWidgets */,
 				F7E2C77DB99DDDAE2285EEE2 /* WatchShared */,
-				1BFBC3F0E53C225D7EA80F50 /* DesignSystem */,
 			);
 			name = MarcoWatchWidgets;
 			productName = MarcoWatchWidgets;

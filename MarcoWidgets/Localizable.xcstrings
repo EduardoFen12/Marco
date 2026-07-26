@@ -40,6 +40,9 @@
         }
       }
     },
+    "Compromisso" : {
+
+    },
     "Contagem regressiva para a próxima data importante." : {
       "localizations" : {
         "en" : {
@@ -51,6 +54,7 @@
       }
     },
     "dias" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -59,6 +63,9 @@
           }
         }
       }
+    },
+    "DIAS" : {
+
     },
     "É hoje!" : {
       "localizations" : {

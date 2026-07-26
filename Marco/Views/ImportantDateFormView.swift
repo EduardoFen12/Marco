@@ -147,6 +147,7 @@ struct ImportantDateFormView: View {
                     save()
                 } label: {
                     Image(systemName: "checkmark")
+                        .foregroundStyle(.marcosGreen)
                 }
                 .disabled(!isNameValid)
                 .accessibilityLabel(Text("Salvar"))
@@ -318,32 +319,51 @@ struct ImportantDateFormView: View {
         }
     }
 
+    /// Seletor em menu, não segmentado: com o 4º tipo (`.appointment`) os rótulos do
+    /// `.segmented` truncavam ("Commemo…", "Compromi…"). Mesma pill `MarcoMint` das linhas
+    /// "Data"/"Hora" (T38), com o símbolo do tipo selecionado como ícone à esquerda.
     private var categoryCard: some View {
         FormSectionCard(label: "Categoria") {
-            Picker("Tipo", selection: $type) {
-                ForEach(DateType.allCases, id: \.self) { type in
-                    Text(type.displayName).tag(type)
+            HStack {
+                FieldIconLabel(systemImage: type.symbolName, title: "Tipo", tint: Color("MarcosGreen"))
+                Spacer()
+                Picker("Tipo", selection: $type) {
+                    ForEach(DateType.allCases, id: \.self) { type in
+                        Text(type.displayName).tag(type)
+                    }
                 }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .tint(Color("MarcoDarkGreen"))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color("MarcoMint"))
+                .clipShape(Capsule())
             }
-            .labelsHidden()
-            .pickerStyle(.segmented)
         }
     }
 
-    /// Chips quebram em múltiplas linhas (T37, mock Figma `24:61`) em vez de rolar horizontalmente
-    /// — `FlowLayout` abaixo. "Nenhum" (seção 3.9 da spec, sem correspondente no mock) entra no
-    /// mesmo fluxo, totalizando 6 chips.
+    /// Mesmo seletor em menu de "Categoria" — substitui os chips em `FlowLayout` da T37 (mock
+    /// `24:61`), que ocupavam duas linhas do form para uma escolha só. "Nenhum" (seção 3.9 da
+    /// spec, sem correspondente no mock) é o caso `nil` do menu.
     private var relationshipCard: some View {
         FormSectionCard(label: "Relacionamento") {
-            FlowLayout(spacing: 8) {
-                RelationshipChip(title: "Nenhum", isSelected: relationship == nil) {
-                    relationship = nil
-                }
-                ForEach(Relationship.allCases, id: \.self) { option in
-                    RelationshipChip(title: option.displayName, isSelected: relationship == option) {
-                        relationship = option
+            HStack {
+                FieldIconLabel(systemImage: "person.2", title: "Relação", tint: Color("MarcosGreen"))
+                Spacer()
+                Picker("Relacionamento", selection: $relationship) {
+                    Text("Nenhum").tag(Relationship?.none)
+                    ForEach(Relationship.allCases, id: \.self) { option in
+                        Text(option.displayName).tag(Relationship?.some(option))
                     }
                 }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .tint(Color("MarcoDarkGreen"))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color("MarcoMint"))
+                .clipShape(Capsule())
             }
         }
     }
@@ -470,92 +490,6 @@ private struct PillDatePicker: View {
             .padding(.vertical, 2)
             .background(Color("MarcoMint"))
             .clipShape(Capsule())
-    }
-}
-
-/// Chip selecionável de `Relationship` (T35), incl. a opção "Nenhum" — substitui o `Picker`
-/// antigo; participa do `FlowLayout` de `relationshipCard`, que quebra os chips em várias
-/// linhas (T37) em vez de rolar horizontalmente.
-private struct RelationshipChip: View {
-    let title: LocalizedStringResource
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Capsule().fill(isSelected ? Color("MarcosGreen") : Color("MarcoBeige")))
-                .foregroundStyle(isSelected ? Color.white : Color("MarcoLabel"))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-/// Layout mínimo (protocolo `Layout`, iOS 16+) que distribui subviews em fileiras, quebrando
-/// para a linha seguinte quando a largura proposta estoura (T37, mock Figma `24:61`) — usado
-/// pelos chips de "Relacionamento" para não rolar horizontalmente. Não é um sistema de layout
-/// genérico/configurável, só o suficiente para quebrar linha por largura.
-private struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let maxWidth = proposal.width ?? .infinity
-        let computedRows = rows(for: subviews, maxWidth: maxWidth)
-        let height = computedRows.reduce(CGFloat(0)) { $0 + $1.maxHeight } + CGFloat(max(0, computedRows.count - 1)) * spacing
-        let width = computedRows.map(\.width).max() ?? 0
-        return CGSize(width: width, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let computedRows = rows(for: subviews, maxWidth: bounds.width)
-        var y = bounds.minY
-        for row in computedRows {
-            var x = bounds.minX
-            for item in row.items {
-                item.subview.place(at: CGPoint(x: x, y: y), anchor: .topLeading, proposal: ProposedViewSize(item.size))
-                x += item.size.width + spacing
-            }
-            y += row.maxHeight + spacing
-        }
-    }
-
-    private struct RowItem {
-        let subview: LayoutSubview
-        let size: CGSize
-    }
-
-    private struct Row {
-        let items: [RowItem]
-        let width: CGFloat
-        let maxHeight: CGFloat
-    }
-
-    private func rows(for subviews: Subviews, maxWidth: CGFloat) -> [Row] {
-        var computedRows: [Row] = []
-        var items: [RowItem] = []
-        var width: CGFloat = 0
-        var maxHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let widthIfAppended = items.isEmpty ? size.width : width + spacing + size.width
-            if widthIfAppended > maxWidth, !items.isEmpty {
-                computedRows.append(Row(items: items, width: width, maxHeight: maxHeight))
-                items = []
-                width = 0
-                maxHeight = 0
-            }
-            width = items.isEmpty ? size.width : width + spacing + size.width
-            maxHeight = max(maxHeight, size.height)
-            items.append(RowItem(subview: subview, size: size))
-        }
-        if !items.isEmpty {
-            computedRows.append(Row(items: items, width: width, maxHeight: maxHeight))
-        }
-        return computedRows
     }
 }
 

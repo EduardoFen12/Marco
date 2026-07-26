@@ -23,7 +23,7 @@ Entidade central: `ImportantDate` (SwiftData `@Model`).
 | `id` | `UUID` | identidade estável (usada também pela `AppEntity`) |
 | `name` | `String` | nome da pessoa/data (ex: "Mari", "Dia das Mães") |
 | `date` | `Date` | a data do evento; para recorrentes, importa dia/mês (ano usado p/ idade quando aplicável) |
-| `type` | `DateType` (enum) | `.birthday`, `.commemorative`, `.memorial` |
+| `type` | `DateType` (enum) | `.birthday`, `.commemorative`, `.memorial`, `.appointment` |
 | `relationship` | `Relationship?` (enum) | ex: `.partner`, `.family`, `.friend`, `.colleague`, `.other` — usado como contexto p/ IA |
 | `notes` | `String?` | contexto livre (gostos, interesses) — habilita a sugestão de presente |
 | `birthYear` | `Int?` | ano de nascimento (opcional; só p/ `type == .birthday`) — habilita cálculo de idade (T13) |

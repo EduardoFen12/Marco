@@ -4,8 +4,21 @@
     " · " : {
 
     },
+    " • " : {
+
+    },
     "%@" : {
 
+    },
+    "%@ • %@" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ • %2$@"
+          }
+        }
+      }
     },
     "%@ de %lld" : {
       "localizations" : {
@@ -266,6 +279,9 @@
         }
       }
     },
+    "Compromisso" : {
+
+    },
     "Cônjuge/Parceiro(a)" : {
       "localizations" : {
         "en" : {
@@ -368,6 +384,9 @@
           }
         }
       }
+    },
+    "DIAS" : {
+
     },
     "Digite o nome de uma data para buscar." : {
       "localizations" : {
@@ -499,7 +518,11 @@
         }
       }
     },
+    "GERAR\nMENSAGEM" : {
+
+    },
     "Gerar mensagem" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -623,6 +646,9 @@
         }
       }
     },
+    "Mensagem sugerida" : {
+
+    },
     "Mês" : {
       "localizations" : {
         "en" : {
@@ -744,6 +770,9 @@
         }
       }
     },
+    "NOVO REGISTRO" : {
+
+    },
     "Outro" : {
       "localizations" : {
         "en" : {
@@ -817,6 +846,9 @@
         }
       }
     },
+    "Relação" : {
+
+    },
     "Relacionamento" : {
       "localizations" : {
         "en" : {
@@ -840,7 +872,11 @@
     "Selecionar todos" : {
 
     },
+    "SUGERIR\nPRESENTE" : {
+
+    },
     "Sugerir presente" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -849,6 +885,9 @@
           }
         }
       }
+    },
+    "Sugestão de presente" : {
+
     },
     "Sugestões de IA" : {
       "localizations" : {
@@ -933,6 +972,9 @@
           }
         }
       }
+    },
+    "Voltar" : {
+
     }
   },
   "version" : "1.1"

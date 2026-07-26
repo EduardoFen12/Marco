@@ -101,6 +101,7 @@ struct ImportantDateListView: View {
                 }
             }
             .navigationTitle("Marco")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
@@ -278,18 +279,10 @@ private struct FeaturedDateCard: View {
         } else {
             ZStack {
                 Color("MarcoDarkGreen")
-                Image(systemName: emptyStateIcon)
+                Image(systemName: importantDate.type.symbolName)
                     .font(.system(size: 96))
                     .foregroundStyle(Color("MarcoMint").opacity(0.35))
             }
-        }
-    }
-
-    private var emptyStateIcon: String {
-        switch importantDate.type {
-        case .birthday: return "birthday.cake.fill"
-        case .commemorative: return "sparkles"
-        case .memorial: return "heart.fill"
         }
     }
 
@@ -416,6 +409,7 @@ extension DateType {
         case .birthday: return "Aniversário"
         case .commemorative: return "Comemorativa"
         case .memorial: return "Memorial"
+        case .appointment: return "Compromisso"
         }
     }
 }

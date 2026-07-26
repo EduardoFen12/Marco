@@ -41,6 +41,7 @@
       }
     },
     "dias" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -49,6 +50,9 @@
           }
         }
       }
+    },
+    "DIAS" : {
+
     },
     "É hoje!" : {
       "localizations" : {

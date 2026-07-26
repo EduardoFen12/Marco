@@ -75,12 +75,21 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
+            BlueprintIdentifier = "FAD74E70F041587EDF61C815"
+            BuildableName = "MarcoWatchWidgets.appex"
+            BlueprintName = "MarcoWatchWidgets"
+            ReferencedContainer = "container:Marco.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
             BlueprintIdentifier = "A04598713009743E00EFFE38"
             BuildableName = "Marco.app"
             BlueprintName = "Marco"
             ReferencedContainer = "container:Marco.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "_XCWidgetKind"
