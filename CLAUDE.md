@@ -22,11 +22,16 @@ Se o simulador não existir, escolha um disponível via `xcrun simctl list devic
 
 ## Estrutura
 
-- `Shared/` — `ImportantDate` (@Model), enums (`DateType`, `Relationship`) e `Persistence` (App Group, T19/T20)
+- `Shared/` — `ImportantDate` (@Model), enums (`DateType`, `Relationship`) e `Persistence` (App Group, T19/T20). Grupo sincronizado com os targets `Marco` **e** `MarcoWidgets`.
 - `Marco/Views/` — telas SwiftUI
 - `Marco/Services/` — `NotificationService`, `AISuggestionService`
 - `Marco/Intents/` — App Intents, `AppEntity`, `AppShortcutsProvider`
+- `WatchShared/Assets.xcassets` — color sets da paleta do redesign (T29), movidos para cá pela T41 para ficarem visíveis a `Marco`, `MarcoWatch` e `MarcoWatchWidgets`. `MarcoWidgets` ainda não os enxerga (ponto tratado por T42). `Marco/Assets.xcassets` guarda só `AppIcon`/`AccentColor`. ⚠️ **Os slots de aparência estão invertidos de propósito** — o slot sem tag ("Any") é o tom **escuro**, porque o watchOS descarta a entrada tagueada `luminosity` no build (ver achado da T41 na seção 7 da SPEC.md). Cor nova criada no editor do Xcode do jeito padrão sai errada no Watch.
+- `MarcoWidgets/` — widget iOS (T20); `MarcoWatch/` + `MarcoWatchWidgets/` — app do Watch e complications (T21)
+- `WatchShared/` — `WatchDateSnapshot`/`WatchSnapshotStore`, sincronizados via `WatchConnectivity`. Grupo compartilhado por `Marco`, `MarcoWatch` e `MarcoWatchWidgets`
 - `docs/` — documentação de apoio ao projeto
+
+Alvos usam `PBXFileSystemSynchronizedRootGroup` (Xcode 16+): arquivo novo dentro de um grupo já sincronizado entra no target sozinho, sem editar `project.pbxproj`. Mudar **membership** (um catálogo/arquivo passar a pertencer a outro target) continua exigindo mexer no `.pbxproj`.
 
 ## Fluxo de trabalho (SDD)
 

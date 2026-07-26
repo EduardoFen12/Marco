@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 /// Versão mínima de `DateType`, sem dependência de `AppIntents`/SwiftData — só o necessário pra
 /// escolher um símbolo e exibir no Watch (T21). Mantém os mesmos raw values de `DateType` pra
@@ -13,11 +14,28 @@ enum WatchDateKind: String, Codable {
     case commemorative
     case memorial
 
+    /// Espelha `DateType.symbolName` (`Marco/Views/ImportantDateListView.swift`) — mesmo símbolo
+    /// por categoria em iOS e watchOS (T41). Antes desta task, este enum usava um mapeamento
+    /// próprio (`birthday.cake`/`star`/`flame`), divergente do app (achado registrado na SPEC
+    /// seção 7).
     var symbolName: String {
         switch self {
-        case .birthday: "birthday.cake"
+        case .birthday: "heart"
         case .commemorative: "star"
-        case .memorial: "flame"
+        case .memorial: "leaf"
+        }
+    }
+
+    /// Cor da categoria (T41) — mesmo mapeamento de `DateType.stripeColor`, usado no número de
+    /// dias e no símbolo da lista do Watch (`WatchDateListView`). `import SwiftUI` foi adicionado
+    /// a este arquivo (antes só `Foundation`) porque este é o único lugar visível aos três alvos
+    /// (`Marco`, `MarcoWatch`, `MarcoWatchWidgets`) — SwiftUI já é dependência de todos eles, e
+    /// centralizar aqui evita duplicar o mapeamento na view do Watch.
+    var categoryColor: Color {
+        switch self {
+        case .birthday: Color("MarcosGreen")
+        case .commemorative: Color("MarcoDarkGreen")
+        case .memorial: Color("MarcoGray")
         }
     }
 }
@@ -53,5 +71,12 @@ struct WatchDateSnapshot: Codable, Identifiable, Equatable {
         case 1: return "Amanhã"
         case let days: return "Faltam \(days) dias"
         }
+    }
+
+    /// "15 de Junho" — mesmo formato de `ImportantDate.dateLabel` (`ImportantDateListView.swift`),
+    /// usado como subtítulo do card na lista do Watch (T41): o número de dias já aparece no bloco
+    /// grande ao lado, então o subtítulo mostra a data em vez de repetir "Faltam N dias".
+    var dateLabel: String {
+        nextOccurrence.formatted(.dateTime.day().month(.wide))
     }
 }

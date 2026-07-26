@@ -14,6 +14,9 @@ struct NextDateComplicationEntry: TimelineEntry {
     let date: Date
     let name: String?
     let daysUntil: Int
+    /// Categoria da data mais próxima (T41), usada para mostrar o símbolo unificado
+    /// (`WatchDateKind.symbolName`) nas famílias com espaço pra isso; `nil` quando não há data.
+    let kind: WatchDateKind?
 }
 
 struct NextDateComplicationProvider: TimelineProvider {
@@ -21,12 +24,12 @@ struct NextDateComplicationProvider: TimelineProvider {
     private static let daysAhead = 7
 
     func placeholder(in context: Context) -> NextDateComplicationEntry {
-        NextDateComplicationEntry(date: .now, name: String(localized: "Aniversário da Mari"), daysUntil: 3)
+        NextDateComplicationEntry(date: .now, name: String(localized: "Aniversário da Mari"), daysUntil: 3, kind: .birthday)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NextDateComplicationEntry) -> Void) {
         completion(
-            NextDateComplicationEntry(date: .now, name: String(localized: "Aniversário da Mari"), daysUntil: 3)
+            NextDateComplicationEntry(date: .now, name: String(localized: "Aniversário da Mari"), daysUntil: 3, kind: .birthday)
         )
     }
 
@@ -43,12 +46,17 @@ struct NextDateComplicationProvider: TimelineProvider {
                 .map { ($0, $0.daysUntil(from: referenceDate, calendar: calendar)) }
                 .min { $0.1 < $1.1 }
             entries.append(
-                NextDateComplicationEntry(date: referenceDate, name: closest?.0.name, daysUntil: closest?.1 ?? 0)
+                NextDateComplicationEntry(
+                    date: referenceDate,
+                    name: closest?.0.name,
+                    daysUntil: closest?.1 ?? 0,
+                    kind: closest?.0.kind
+                )
             )
         }
 
         if entries.isEmpty {
-            entries = [NextDateComplicationEntry(date: today, name: nil, daysUntil: 0)]
+            entries = [NextDateComplicationEntry(date: today, name: nil, daysUntil: 0, kind: nil)]
         }
 
         let refreshDate = calendar.date(byAdding: .day, value: Self.daysAhead, to: today) ?? today
@@ -90,7 +98,7 @@ struct NextDateComplicationView: View {
             VStack(spacing: 0) {
                 Text("\(entry.daysUntil)")
                     .font(.title2.bold())
-                Text("dias")
+                Text("DIAS")
                     .font(.caption2)
             }
         }
@@ -98,10 +106,15 @@ struct NextDateComplicationView: View {
     }
 
     private var rectangular: some View {
-        VStack(alignment: .leading) {
-            Text(entry.name ?? "Nenhuma data")
-                .font(.headline)
-                .lineLimit(1)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                if let kind = entry.kind {
+                    Image(systemName: kind.symbolName)
+                }
+                Text(entry.name ?? "Nenhuma data")
+                    .font(.headline)
+                    .lineLimit(1)
+            }
             Text(daysLabel ?? "—")
                 .font(.caption)
         }
@@ -147,5 +160,5 @@ struct NextDateComplication: Widget {
 #Preview(as: .accessoryCircular) {
     NextDateComplication()
 } timeline: {
-    NextDateComplicationEntry(date: .now, name: "Aniversário da Mari", daysUntil: 3)
+    NextDateComplicationEntry(date: .now, name: "Aniversário da Mari", daysUntil: 3, kind: .birthday)
 }
