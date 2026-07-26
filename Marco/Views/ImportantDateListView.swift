@@ -408,12 +408,6 @@ extension ImportantDate {
         let formattedTime = String(format: "%02d:%02d", eventHour, eventMinute)
         return "às \(formattedTime)"
     }
-
-    /// "15 de Junho" — dia + mês por extenso, usado no card de destaque (T33) e nos cards da
-    /// lista (T39); sem ano, já que a recorrência anual ignora o ano de `date`.
-    var dateLabel: String {
-        date.formatted(.dateTime.day().month(.wide))
-    }
 }
 
 extension DateType {
@@ -422,28 +416,6 @@ extension DateType {
         case .birthday: return "Aniversário"
         case .commemorative: return "Comemorativa"
         case .memorial: return "Memorial"
-        }
-    }
-
-    /// Cor da stripe de categoria à esquerda da célula (T33) e do número de dias no card (T39) —
-    /// usa apenas color sets do design system (T29), sem hex hardcoded. Ajustada na T39 para bater
-    /// com o mock `13:5`: memorial cinza, aniversário teal, comemorativa verde escuro (T33 tinha
-    /// posto `MarcoMint`, um mint claro, na comemorativa — sem referência de mock à época).
-    var stripeColor: Color {
-        switch self {
-        case .birthday: return Color("MarcosGreen")
-        case .commemorative: return Color("MarcoDarkGreen")
-        case .memorial: return Color("MarcoGray")
-        }
-    }
-
-    /// SF Symbol da categoria (T40, mock `24:159`, linha do tipo no header do Detalhe): `heart`
-    /// para aniversário, `star` para comemorativa, `leaf` para memorial.
-    var symbolName: String {
-        switch self {
-        case .birthday: return "heart"
-        case .commemorative: return "star"
-        case .memorial: return "leaf"
         }
     }
 }

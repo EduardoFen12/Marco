@@ -131,6 +131,14 @@ extension ImportantDate {
         return calendar.component(.year, from: occurrence) - birthYear
     }
 
+    /// "15 de Junho" — dia + mês por extenso, usado no card de destaque (T33) e nos cards da
+    /// lista (T39); sem ano, já que a recorrência anual ignora o ano de `date`. Movido para
+    /// `Shared/` na T42 (era `Marco/Views/ImportantDateListView.swift`, target `Marco` apenas)
+    /// para ficar visível também ao `MarcoWidgets` (`.systemMedium` mostra a data por extenso).
+    var dateLabel: String {
+        date.formatted(.dateTime.day().month(.wide))
+    }
+
     /// Calcula a próxima data (dia `day`/mês `month`, ignorando ano) que seja igual ou posterior
     /// a `referenceDate`. Testa o ano corrente e o próximo; para 29/02 numa sequência de anos
     /// não-bissextos, avança até o próximo ano bissexto (ponytail: laço linear, ok para o alcance

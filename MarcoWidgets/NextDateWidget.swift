@@ -15,6 +15,9 @@ struct NextDateEntry: TimelineEntry {
     let name: String?
     let type: DateType?
     let daysUntil: Int
+    /// "15 de Junho" (`ImportantDate.dateLabel`) — já formatada pelo provider (T42), para a
+    /// `.systemMedium` mostrar a data por extenso sem recalcular formatação de data na view.
+    let dateLabel: String?
 }
 
 struct NextDateProvider: TimelineProvider {
@@ -22,12 +25,12 @@ struct NextDateProvider: TimelineProvider {
     private static let daysAhead = 7
 
     func placeholder(in context: Context) -> NextDateEntry {
-        NextDateEntry(date: .now, name: String(localized: "Aniversário da Mari"), type: .birthday, daysUntil: 3)
+        NextDateEntry(date: .now, name: String(localized: "Aniversário da Mari"), type: .birthday, daysUntil: 3, dateLabel: "15 de Junho")
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NextDateEntry) -> Void) {
         completion(
-            NextDateEntry(date: .now, name: String(localized: "Aniversário da Mari"), type: .birthday, daysUntil: 3)
+            NextDateEntry(date: .now, name: String(localized: "Aniversário da Mari"), type: .birthday, daysUntil: 3, dateLabel: "15 de Junho")
         )
     }
 
@@ -49,27 +52,18 @@ struct NextDateProvider: TimelineProvider {
                     date: referenceDate,
                     name: closest?.0.name,
                     type: closest?.0.type,
-                    daysUntil: closest?.1 ?? 0
+                    daysUntil: closest?.1 ?? 0,
+                    dateLabel: closest?.0.dateLabel
                 )
             )
         }
 
         if entries.isEmpty {
-            entries = [NextDateEntry(date: today, name: nil, type: nil, daysUntil: 0)]
+            entries = [NextDateEntry(date: today, name: nil, type: nil, daysUntil: 0, dateLabel: nil)]
         }
 
         let refreshDate = calendar.date(byAdding: .day, value: Self.daysAhead, to: today) ?? today
         completion(Timeline(entries: entries, policy: .after(refreshDate)))
-    }
-}
-
-private extension DateType {
-    var symbolName: String {
-        switch self {
-        case .birthday: "birthday.cake"
-        case .commemorative: "star"
-        case .memorial: "flame"
-        }
     }
 }
 
@@ -85,8 +79,10 @@ struct NextDateWidgetView: View {
             rectangular
         case .accessoryInline:
             inline
+        case .systemMedium:
+            mediumScreen
         default:
-            homeScreen
+            smallScreen
         }
     }
 
@@ -102,29 +98,86 @@ struct NextDateWidgetView: View {
         }
     }
 
-    private var homeScreen: some View {
+    /// Cor da categoria (`DateType.stripeColor`) para o número/símbolo; `MarcoLabel` como
+    /// fallback quando não há data próxima (`entry.type == nil`).
+    private var categoryColor: Color {
+        entry.type?.stripeColor ?? Color("MarcoLabel")
+    }
+
+    private var emptyState: some View {
+        Text("Nenhuma data próxima")
+            .font(.subheadline)
+            .foregroundStyle(Color("MarcoLabelSecondary"))
+    }
+
+    /// Prioriza o bloco número + "DIAS" (T39/T40) e o nome; sem espaço pra data por extenso.
+    private var smallScreen: some View {
         VStack(alignment: .leading, spacing: 4) {
             if let type = entry.type {
                 Image(systemName: type.symbolName)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(categoryColor)
             }
             Spacer()
-            if let name = entry.name, let daysLabel {
+            if let name = entry.name {
+                Text(entry.daysUntil, format: .number)
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(categoryColor)
+                Text("DIAS")
+                    .font(.caption2.bold())
+                    .tracking(1)
+                    .foregroundStyle(Color("MarcoLabelSecondary"))
                 Text(name)
-                    .font(.headline)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(Color("MarcoLabel"))
                     .lineLimit(2)
-                Text(daysLabel)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
             } else {
-                Text("Nenhuma data próxima")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                emptyState
             }
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .containerBackground(.fill.tertiary, for: .widget)
+        .containerBackground(Color("MarcoCream"), for: .widget)
+    }
+
+    /// Espaço extra em relação à `.systemSmall` para a data por extenso (`entry.dateLabel`) junto
+    /// do nome, mesmo bloco número + "DIAS" de `ImportantDateRow` (T39) à direita.
+    private var mediumScreen: some View {
+        HStack(alignment: .center, spacing: 12) {
+            if let name = entry.name {
+                VStack(alignment: .leading, spacing: 4) {
+                    if let type = entry.type {
+                        Image(systemName: type.symbolName)
+                            .foregroundStyle(categoryColor)
+                    }
+                    Text(name)
+                        .font(.title3.bold())
+                        .foregroundStyle(Color("MarcoLabel"))
+                        .lineLimit(2)
+                    if let dateLabel = entry.dateLabel {
+                        Text(dateLabel)
+                            .font(.subheadline)
+                            .foregroundStyle(Color("MarcoLabelSecondary"))
+                    }
+                }
+
+                Spacer(minLength: 12)
+
+                VStack(spacing: 0) {
+                    Text(entry.daysUntil, format: .number)
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(categoryColor)
+                    Text("DIAS")
+                        .font(.caption2.bold())
+                        .tracking(1)
+                        .foregroundStyle(Color("MarcoLabelSecondary"))
+                }
+            } else {
+                emptyState
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .containerBackground(Color("MarcoCream"), for: .widget)
     }
 
     private var circular: some View {
@@ -133,7 +186,7 @@ struct NextDateWidgetView: View {
             VStack(spacing: 0) {
                 Text("\(entry.daysUntil)")
                     .font(.title2.bold())
-                Text("dias")
+                Text("DIAS")
                     .font(.caption2)
             }
         }
@@ -186,5 +239,5 @@ struct NextDateWidget: Widget {
 #Preview(as: .systemSmall) {
     NextDateWidget()
 } timeline: {
-    NextDateEntry(date: .now, name: "Aniversário da Mari", type: .birthday, daysUntil: 3)
+    NextDateEntry(date: .now, name: "Aniversário da Mari", type: .birthday, daysUntil: 3, dateLabel: "15 de Junho")
 }
