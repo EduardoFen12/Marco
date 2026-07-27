@@ -44,7 +44,10 @@ struct NextDateProvider: TimelineProvider {
 
         for offset in 0..<Self.daysAhead {
             guard let referenceDate = calendar.date(byAdding: .day, value: offset, to: today) else { continue }
+            // Evento único vencido (T43) fica de fora da candidatura a "mais próxima" — sem isso
+            // um evento único já passado nesse dia da janela venceria o `.min` com dias negativos.
             let closest = allDates
+                .filter { !$0.isPast(from: referenceDate, calendar: calendar) }
                 .map { ($0, $0.daysUntilNextOccurrence(from: referenceDate, calendar: calendar)) }
                 .min { $0.1 < $1.1 }
             entries.append(

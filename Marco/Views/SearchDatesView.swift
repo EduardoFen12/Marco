@@ -15,7 +15,9 @@ struct SearchDatesView: View {
 
     private var results: [ImportantDate] {
         guard !searchText.isEmpty else { return [] }
-        return importantDates.filter { $0.name.localizedStandardContains(searchText) }
+        // Eventos únicos vencidos (T43) ficam escondidos aqui também, mesmo predicado da Home.
+        return ImportantDate.excludingPast(importantDates)
+            .filter { $0.name.localizedStandardContains(searchText) }
     }
 
     var body: some View {

@@ -35,11 +35,14 @@ enum NotificationLayer: String, CaseIterable {
 }
 
 /// Trigger calculado para uma camada de notificação: identificador determinístico +
-/// `DateComponents` para um `UNCalendarNotificationTrigger` recorrente anual.
+/// `DateComponents` para um `UNCalendarNotificationTrigger`. `repeats` acompanha
+/// `ImportantDate.isAnnual` (T43): anual dispara todo ano (`dateComponents` só mês/dia + hora);
+/// evento único dispara uma vez só (`dateComponents` inclui o ano).
 struct NotificationTriggerSpec: Equatable {
     let layer: NotificationLayer
     let identifier: String
     let dateComponents: DateComponents
+    let repeats: Bool
 }
 
 /// Agenda e cancela as notificações locais das 3 camadas (1 semana antes, 1 dia antes, no dia)
@@ -86,7 +89,10 @@ enum NotificationService {
     }
 
     /// Calcula os triggers das 3 camadas a partir da próxima ocorrência de `importantDate.date`.
-    /// Puro (sem I/O) — usado tanto pelo agendamento real quanto pelos testes.
+    /// Puro (sem I/O) — usado tanto pelo agendamento real quanto pelos testes. Anual (T43,
+    /// comportamento preservado): `dateComponents` só mês/dia, `repeats: true`. Evento único:
+    /// `dateComponents` inclui o ano, `repeats: false`, e a camada é descartada quando seu disparo
+    /// já passou (ex: evento daqui a 3 dias não agenda a camada "1 semana antes").
     static func triggerSpecs(
         for importantDate: ImportantDate,
         from referenceDate: Date = .now,
@@ -97,13 +103,19 @@ enum NotificationService {
             guard let fireDate = calendar.date(byAdding: .day, value: -layer.daysBefore, to: occurrence) else {
                 return nil
             }
-            var components = calendar.dateComponents([.month, .day], from: fireDate)
+            if !importantDate.isAnnual && fireDate < calendar.startOfDay(for: referenceDate) {
+                return nil
+            }
+            var components = importantDate.isAnnual
+                ? calendar.dateComponents([.month, .day], from: fireDate)
+                : calendar.dateComponents([.year, .month, .day], from: fireDate)
             components.hour = importantDate.notificationHour
             components.minute = importantDate.notificationMinute
             return NotificationTriggerSpec(
                 layer: layer,
                 identifier: identifier(for: importantDate, layer: layer),
-                dateComponents: components
+                dateComponents: components,
+                repeats: importantDate.isAnnual
             )
         }
     }
@@ -127,7 +139,7 @@ enum NotificationService {
             content.categoryIdentifier = categoryIdentifier
             content.userInfo = [importantDateIDKey: importantDate.id.uuidString]
 
-            let trigger = UNCalendarNotificationTrigger(dateMatching: spec.dateComponents, repeats: true)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: spec.dateComponents, repeats: spec.repeats)
             let request = UNNotificationRequest(identifier: spec.identifier, content: content, trigger: trigger)
             try? await center.add(request)
         }

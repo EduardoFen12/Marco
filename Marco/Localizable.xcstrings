@@ -448,6 +448,9 @@
         }
       }
     },
+    "Evento anual" : {
+
+    },
     "Excluir" : {
       "localizations" : {
         "en" : {
@@ -782,6 +785,9 @@
           }
         }
       }
+    },
+    "Passou" : {
+
     },
     "Qual o nome da data?" : {
       "localizations" : {

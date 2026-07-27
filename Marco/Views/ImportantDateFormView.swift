@@ -26,6 +26,11 @@ struct ImportantDateFormView: View {
     @State private var birthdayMonth: Int
     @State private var birthdayDay: Int
     @State private var type: DateType
+    /// Evento anual vs. único (T43) — só aparece no card "Quando" para tipos não-aniversário
+    /// (aniversário é sempre anual, ver `whenCard`). Default **desligado** ao criar (decisão do
+    /// usuário, diferente do default `true` do modelo, que é só pra migração); em edição vence o
+    /// valor persistido.
+    @State private var isAnnual: Bool
     @State private var relationship: Relationship?
     @State private var notes: String
     @State private var birthYearText: String
@@ -44,6 +49,7 @@ struct ImportantDateFormView: View {
         _birthdayMonth = State(initialValue: components.month ?? 1)
         _birthdayDay = State(initialValue: components.day ?? 1)
         _type = State(initialValue: importantDate?.type ?? .birthday)
+        _isAnnual = State(initialValue: importantDate?.isAnnual ?? false)
         _relationship = State(initialValue: importantDate?.relationship)
         _notes = State(initialValue: importantDate?.notes ?? "")
         _birthYearText = State(initialValue: importantDate?.birthYear.map(String.init) ?? "")
@@ -235,43 +241,19 @@ struct ImportantDateFormView: View {
         }
     }
 
-    /// Mantém a lógica atual (T14): seletor completo de data para não-aniversário, dia/mês +
-    /// ano opcional (com idade calculada) para aniversário. Ícone + pill à direita (T38, mock
-    /// `24:61`) via `PillDatePicker` (ramo não-aniversário) e via o par de `Picker` (`.menu`,
-    /// ramo aniversário — T14 não usa `DatePicker` ali) estilizado com o mesmo fundo/cápsula.
+    /// Mantém a lógica atual (T14): seletor completo de data para não-aniversário/não-anual,
+    /// dia/mês (+ ano opcional/idade calculada pra aniversário) para os demais. Ícone + pill à
+    /// direita (T38, mock `24:61`) via `PillDatePicker` (ramo com ano) e via o par de `Picker`
+    /// (`.menu`, ramo dia/mês — T14 não usa `DatePicker` ali) estilizado com o mesmo fundo/cápsula.
+    ///
+    /// T43: `type == .birthday` é sempre anual (switch nem aparece). Os demais tipos ganham o
+    /// `Toggle` "Evento anual" — ligado reaproveita o mesmo par de `Picker` dia/mês do aniversário
+    /// (sem "Ano de nascimento"); desligado usa o `PillDatePicker` de data completa (já existente).
     private var whenCard: some View {
         FormSectionCard(label: "Quando") {
             VStack(alignment: .leading, spacing: 12) {
                 if type == .birthday {
-                    HStack(spacing: 12) {
-                        FieldIconLabel(systemImage: "calendar", title: "Data", tint: Color("MarcosGreen"))
-                        Spacer()
-                        HStack(spacing: 2) {
-                            Picker("Mês", selection: $birthdayMonth) {
-                                ForEach(Array(Calendar.current.monthSymbols.enumerated()), id: \.offset) { index, symbol in
-                                    Text(symbol.capitalized).tag(index + 1)
-                                }
-                            }
-                            Picker("Dia", selection: $birthdayDay) {
-                                ForEach(Self.daysInBirthdayMonth(birthdayMonth), id: \.self) { day in
-                                    Text("\(day)").tag(day)
-                                }
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .tint(Color("MarcoDarkGreen"))
-                        .fixedSize()
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color("MarcoMint"))
-                        .clipShape(Capsule())
-                        .onChange(of: birthdayMonth) {
-                            let validDays = Self.daysInBirthdayMonth(birthdayMonth)
-                            if !validDays.contains(birthdayDay) {
-                                birthdayDay = validDays.last ?? 1
-                            }
-                        }
-                    }
+                    monthDayPickerRow
 
                     TextField("Ano de nascimento (opcional)", text: $birthYearText)
                         .keyboardType(.numberPad)
@@ -286,11 +268,63 @@ struct ImportantDateFormView: View {
                             .foregroundStyle(Color("MarcoLabelSecondary"))
                     }
                 } else {
-                    HStack {
-                        FieldIconLabel(systemImage: "calendar", title: "Data", tint: Color("MarcosGreen"))
-                        Spacer()
-                        PillDatePicker(title: "Data", selection: $date, displayedComponents: .date)
+                    Toggle("Evento anual", isOn: $isAnnual)
+                        .onChange(of: isAnnual) { _, newValue in
+                            // Mantém `date` e o par dia/mês em sincronia ao alternar. Ao desligar,
+                            // usa a próxima ocorrência futura do dia/mês (nunca o ano fixo 2000
+                            // de `birthdayDate`, que deixaria o evento único já "passado").
+                            if newValue {
+                                let components = Calendar.current.dateComponents([.month, .day], from: date)
+                                birthdayMonth = components.month ?? birthdayMonth
+                                birthdayDay = components.day ?? birthdayDay
+                            } else {
+                                date = ImportantDate.nextOccurrence(ofMonth: birthdayMonth, day: birthdayDay, from: .now, calendar: .current)
+                            }
+                        }
+
+                    if isAnnual {
+                        monthDayPickerRow
+                    } else {
+                        HStack {
+                            FieldIconLabel(systemImage: "calendar", title: "Data")
+                            Spacer()
+                            PillDatePicker(title: "Data", selection: $date, displayedComponents: .date)
+                        }
                     }
+                }
+            }
+        }
+    }
+
+    /// Par de `Picker` (mês/dia, `.menu`) contra o ano bissexto fixo 2000 — reaproveitado pelo
+    /// ramo aniversário e pelo ramo não-aniversário com "Evento anual" ligado (T43).
+    private var monthDayPickerRow: some View {
+        HStack(spacing: 12) {
+            FieldIconLabel(systemImage: "calendar", title: "Data")
+            Spacer()
+            HStack(spacing: 2) {
+                Picker("Mês", selection: $birthdayMonth) {
+                    ForEach(Array(Calendar.current.monthSymbols.enumerated()), id: \.offset) { index, symbol in
+                        Text(symbol.capitalized).tag(index + 1)
+                    }
+                }
+                Picker("Dia", selection: $birthdayDay) {
+                    ForEach(Self.daysInBirthdayMonth(birthdayMonth), id: \.self) { day in
+                        Text("\(day)").tag(day)
+                    }
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(Color("MarcoDarkGreen"))
+            .fixedSize()
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color("MarcoMint"))
+            .clipShape(Capsule())
+            .onChange(of: birthdayMonth) {
+                let validDays = Self.daysInBirthdayMonth(birthdayMonth)
+                if !validDays.contains(birthdayDay) {
+                    birthdayDay = validDays.last ?? 1
                 }
             }
         }
@@ -325,7 +359,7 @@ struct ImportantDateFormView: View {
     private var categoryCard: some View {
         FormSectionCard(label: "Categoria") {
             HStack {
-                FieldIconLabel(systemImage: type.symbolName, title: "Tipo", tint: Color("MarcosGreen"))
+                FieldIconLabel(systemImage: type.symbolName, title: "Tipo")
                 Spacer()
                 Picker("Tipo", selection: $type) {
                     ForEach(DateType.allCases, id: \.self) { type in
@@ -334,6 +368,7 @@ struct ImportantDateFormView: View {
                 }
                 .labelsHidden()
                 .pickerStyle(.menu)
+                .fixedSize()
                 .tint(Color("MarcoDarkGreen"))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
@@ -349,7 +384,7 @@ struct ImportantDateFormView: View {
     private var relationshipCard: some View {
         FormSectionCard(label: "Relacionamento") {
             HStack {
-                FieldIconLabel(systemImage: "person.2", title: "Relação", tint: Color("MarcosGreen"))
+                FieldIconLabel(systemImage: "person.2", title: "Relação")
                 Spacer()
                 Picker("Relacionamento", selection: $relationship) {
                     Text("Nenhum").tag(Relationship?.none)
@@ -359,6 +394,7 @@ struct ImportantDateFormView: View {
                 }
                 .labelsHidden()
                 .pickerStyle(.menu)
+                .fixedSize()
                 .tint(Color("MarcoDarkGreen"))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
@@ -399,7 +435,11 @@ struct ImportantDateFormView: View {
     private func save() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        let finalDate = type == .birthday ? Self.birthdayDate(month: birthdayMonth, day: birthdayDay) : date
+        // T43: aniversário é sempre anual; os demais tipos usam o valor do `Toggle`. Anual (dos
+        // dois casos) grava `date` contra o ano fixo 2000 (dia/mês, convenção do model); não-anual
+        // grava a data completa escolhida no `PillDatePicker`, ano incluso.
+        let finalIsAnnual = type == .birthday ? true : isAnnual
+        let finalDate = finalIsAnnual ? Self.birthdayDate(month: birthdayMonth, day: birthdayDay) : date
         let finalBirthYear = type == .birthday ? Self.parseBirthYear(birthYearText) : nil
         let (hour, minute) = Self.timeComponents(from: notificationTime)
         let (eventHour, eventMinute): (Int?, Int?) = hasEventTime
@@ -419,6 +459,7 @@ struct ImportantDateFormView: View {
             importantDate.eventHour = eventHour
             importantDate.eventMinute = eventMinute
             importantDate.photoData = photoData
+            importantDate.isAnnual = finalIsAnnual
             savedDate = importantDate
         } else {
             let newDate = ImportantDate(
@@ -432,7 +473,8 @@ struct ImportantDateFormView: View {
                 notificationMinute: minute,
                 eventHour: eventHour,
                 eventMinute: eventMinute,
-                photoData: photoData
+                photoData: photoData,
+                isAnnual: finalIsAnnual
             )
             ImportantDate.insert(newDate, into: modelContext)
             savedDate = newDate
@@ -448,7 +490,6 @@ struct ImportantDateFormView: View {
 private struct FieldIconLabel: View {
     let systemImage: String
     let title: LocalizedStringResource
-    var tint: Color = Color("MarcoLabelSecondary")
 
     var body: some View {
         Label {
@@ -457,7 +498,7 @@ private struct FieldIconLabel: View {
                 .foregroundStyle(Color("MarcoLabel"))
         } icon: {
             Image(systemName: systemImage)
-                .foregroundStyle(tint)
+                .foregroundStyle(Color("MarcosGreen"))
         }
     }
 }

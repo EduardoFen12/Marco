@@ -104,6 +104,7 @@ struct ImportantDateDetailView: View {
         VStack(spacing: 28) {
             CountdownRingView(
                 daysRemaining: importantDate.daysUntilNextOccurrence(),
+                isPast: importantDate.isPast,
                 accessibilityLabel: importantDate.daysRemainingLabel
             )
             VStack(spacing: 8) {
@@ -245,8 +246,12 @@ struct ImportantDateDetailView: View {
 /// medida de precisão, só uma pista visual.
 private struct CountdownRingView: View {
     let daysRemaining: Int
-    /// Rótulo anunciado pelo VoiceOver ("Faltam 21 dias"/"Hoje"/"Amanhã") — o texto visual do
-    /// anel mostra só o número + "DIAS" (T40 fix, mesmo padrão de `ImportantDateRow`), então o
+    /// Evento único vencido (T43, `ImportantDate.isPast`) — caminho raro (a data já teria saído
+    /// da Home/busca antes de chegar aqui), mas o anel não deve renderizar número negativo: mostra
+    /// "Passou" no lugar do número + "DIAS".
+    let isPast: Bool
+    /// Rótulo anunciado pelo VoiceOver ("Faltam 21 dias"/"Hoje"/"Amanhã"/"Passou") — o texto visual
+    /// do anel mostra só o número + "DIAS" (T40 fix, mesmo padrão de `ImportantDateRow`), então o
     /// anel precisa desse rótulo à parte para não soar "21, DIAS" solto.
     let accessibilityLabel: LocalizedStringResource
 
@@ -264,13 +269,19 @@ private struct CountdownRingView: View {
                 .stroke(Color("MarcoDarkGreen"), style: StrokeStyle(lineWidth: 18, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             VStack(spacing: 4) {
-                Text(daysRemaining, format: .number)
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color("MarcoDarkGreen"))
-                Text("DIAS")
-                    .font(.caption.bold())
-                    .tracking(1)
-                    .foregroundStyle(Color("MarcoDarkGreen"))
+                if isPast {
+                    Text("Passou")
+                        .font(.title2.bold())
+                        .foregroundStyle(Color("MarcoDarkGreen"))
+                } else {
+                    Text(daysRemaining, format: .number)
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color("MarcoDarkGreen"))
+                    Text("DIAS")
+                        .font(.caption.bold())
+                        .tracking(1)
+                        .foregroundStyle(Color("MarcoDarkGreen"))
+                }
             }
         }
         .frame(width: 200, height: 200)

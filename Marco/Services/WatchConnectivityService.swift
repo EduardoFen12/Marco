@@ -29,7 +29,8 @@ final class WatchConnectivityService: NSObject {
     /// widget iOS (T20).
     func sync(_ importantDates: [ImportantDate]) {
         guard WCSession.isSupported(), WCSession.default.activationState == .activated else { return }
-        let snapshots = importantDates
+        // Eventos únicos vencidos (T43) não vão pro Watch, mesmo predicado das demais superfícies.
+        let snapshots = ImportantDate.excludingPast(importantDates)
             .map {
                 WatchDateSnapshot(
                     id: $0.id,

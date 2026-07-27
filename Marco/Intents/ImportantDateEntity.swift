@@ -64,11 +64,14 @@ struct ImportantDateEntityQuery: EntityQuery, EntityStringQuery {
         }
     }
 
+    /// Usada por `suggestedEntities`/`entities(matching:)` (descoberta/listagem) — filtra eventos
+    /// únicos vencidos (T43, `ImportantDate.excludingPast`), diferente de `entities(for:)` acima,
+    /// que resolve IDs específicos já conhecidos e não deve escondê-los.
     @MainActor
     private func allSortedByProximity() async throws -> [ImportantDateEntity] {
         let context = ModelContext(Persistence.container)
         let descriptor = FetchDescriptor<ImportantDate>()
-        return try context.fetch(descriptor)
+        return ImportantDate.excludingPast(try context.fetch(descriptor))
             .sorted { $0.daysUntilNextOccurrence() < $1.daysUntilNextOccurrence() }
             .map(ImportantDateEntity.init(model:))
     }

@@ -39,6 +39,11 @@ final class ImportantDate {
     /// ser setada diretamente pelos call sites de criação/edição. Campo novo com default `false` —
     /// lightweight migration do SwiftData para stores existentes.
     var isFeatured: Bool = false
+    /// Evento anual (recorrente, dia/mês) vs. evento único (data completa, incl. ano) — T43.
+    /// `type == .birthday` é sempre `true` (ver `ImportantDateFormView`, que nem mostra o switch
+    /// pra esse tipo). Default `true` — lightweight migration do SwiftData: todo dado existente
+    /// continua se comportando exatamente como antes desta task (recorrência anual).
+    var isAnnual: Bool = true
 
     init(
         id: UUID = UUID(),
@@ -54,7 +59,8 @@ final class ImportantDate {
         eventMinute: Int? = nil,
         createdAt: Date = .now,
         photoData: Data? = nil,
-        isFeatured: Bool = false
+        isFeatured: Bool = false,
+        isAnnual: Bool = true
     ) {
         self.id = id
         self.name = name
@@ -70,6 +76,7 @@ final class ImportantDate {
         self.createdAt = createdAt
         self.photoData = photoData
         self.isFeatured = isFeatured
+        self.isAnnual = isAnnual
     }
 }
 
@@ -108,9 +115,15 @@ extension ImportantDate {
 // MARK: - Próxima ocorrência
 
 extension ImportantDate {
-    /// Próxima ocorrência anual (dia/mês de `date`) a partir de `referenceDate`.
-    /// Se a data cair no próprio `referenceDate`, essa é a ocorrência retornada (0 dias restantes).
+    /// Próxima ocorrência a partir de `referenceDate`. `isAnnual == true` (default, T43) repete
+    /// todo ano: extrai só dia/mês de `date` e ignora o ano, incl. a regra de 29/02 contra o ano
+    /// bissexto fixo 2000 — se a data cair no próprio `referenceDate`, essa é a ocorrência
+    /// retornada (0 dias restantes). `isAnnual == false` é um evento único: o ano de `date` conta,
+    /// então a "próxima ocorrência" é sempre o próprio `date` (`startOfDay`), **mesmo que já tenha
+    /// passado** — é assim que `daysUntilNextOccurrence()` devolve negativo para um evento único
+    /// vencido, base do predicado `isPast` abaixo.
     func nextOccurrence(from referenceDate: Date = .now, calendar: Calendar = .current) -> Date {
+        guard isAnnual else { return calendar.startOfDay(for: date) }
         let components = calendar.dateComponents([.month, .day], from: date)
         guard let month = components.month, let day = components.day else { return date }
         return Self.nextOccurrence(ofMonth: month, day: day, from: referenceDate, calendar: calendar)
@@ -137,6 +150,27 @@ extension ImportantDate {
     /// para ficar visível também ao `MarcoWidgets` (`.systemMedium` mostra a data por extenso).
     var dateLabel: String {
         date.formatted(.dateTime.day().month(.wide))
+    }
+
+    /// Evento único (`isAnnual == false`) cuja data já passou em relação a `referenceDate` — uma
+    /// vez vencido, permanece vencido (eventos únicos não recorrem). Aniversário/comemorativa
+    /// anual nunca é `isPast` (a ocorrência sempre resolve pra hoje ou pro futuro). Ponto único de
+    /// leitura (T43) roteado por todas as superfícies que escondem eventos únicos vencidos, em vez
+    /// de repetir `!isAnnual && daysUntilNextOccurrence() < 0` em cada view/intent/widget.
+    func isPast(from referenceDate: Date = .now, calendar: Calendar = .current) -> Bool {
+        !isAnnual && daysUntilNextOccurrence(from: referenceDate, calendar: calendar) < 0
+    }
+
+    /// Atalho de `isPast(from:calendar:)` contra "agora" — usado pela maioria das superfícies, que
+    /// só precisam saber se a data já passou hoje (não numa janela de dias futuros). O widget
+    /// (`NextDateProvider`), que pré-calcula vários dias à frente, usa a variante parametrizada.
+    var isPast: Bool { isPast() }
+
+    /// Filtra `dates` removendo eventos únicos vencidos (`isPast`) — ponto único de filtro das
+    /// superfícies de leitura (Home, busca, `ImportantDateEntityQuery`, `UpcomingDatesIntent`,
+    /// snapshot do Watch). Nada é excluído do banco, só desta lista de leitura.
+    static func excludingPast(_ dates: [ImportantDate], from referenceDate: Date = .now, calendar: Calendar = .current) -> [ImportantDate] {
+        dates.filter { !$0.isPast(from: referenceDate, calendar: calendar) }
     }
 
     /// Calcula a próxima data (dia `day`/mês `month`, ignorando ano) que seja igual ou posterior

@@ -20,7 +20,8 @@ struct UpcomingDatesIntent: AppIntent {
     func perform() async throws -> some IntentResult & ReturnsValue<[ImportantDateEntity]> & ProvidesDialog {
         let context = ModelContext(Persistence.container)
         let descriptor = FetchDescriptor<ImportantDate>()
-        let upcoming = try context.fetch(descriptor)
+        // Eventos únicos vencidos (T43) ficam de fora, mesmo predicado das demais superfícies.
+        let upcoming = ImportantDate.excludingPast(try context.fetch(descriptor))
             .sorted { $0.daysUntilNextOccurrence() < $1.daysUntilNextOccurrence() }
             .prefix(Self.limit)
             .map(ImportantDateEntity.init(model:))

@@ -15,6 +15,12 @@ struct ImportantDateListView: View {
     @State private var isPresentingImport = false
     @State private var path = NavigationPath()
 
+    /// `importantDates` menos os eventos únicos vencidos (`ImportantDate.isPast`, T43) — ponto de
+    /// entrada único da Home pro predicado compartilhado. Nada some do banco, só desta leitura.
+    private var visibleDates: [ImportantDate] {
+        ImportantDate.excludingPast(importantDates)
+    }
+
     /// Lista abaixo do card de destaque (T33, mock Figma): exclui a data em destaque, que já
     /// aparece no card — quando nenhuma data está destacada, `featuredDate` é `nil` e nada é
     /// filtrado. `ForEach`/`onDelete` abaixo iteram sobre esta mesma coleção, então os índices
@@ -27,7 +33,7 @@ struct ImportantDateListView: View {
     /// Desempatando por `name` e, por fim, por `id` (único e estável), a ordem passa a ser
     /// sempre a mesma para os mesmos dados, então `ForEach` e `delete(at:)` sempre concordam.
     private var sortedDates: [ImportantDate] {
-        importantDates
+        visibleDates
             .filter { $0.id != featuredDate?.id }
             .sorted {
                 if $0.daysUntilNextOccurrence() != $1.daysUntilNextOccurrence() {
@@ -41,15 +47,16 @@ struct ImportantDateListView: View {
     }
 
     /// Data em destaque (T30) mostrada no card do topo; `nil` quando nenhuma data está marcada
-    /// (ex: recém-excluída) — nesse caso o card simplesmente não aparece.
+    /// (ex: recém-excluída) ou quando a destacada é um evento único vencido (T43) — nesse caso o
+    /// card simplesmente não aparece.
     private var featuredDate: ImportantDate? {
-        importantDates.first(where: \.isFeatured)
+        visibleDates.first(where: \.isFeatured)
     }
 
     var body: some View {
         NavigationStack(path: $path) {
             Group {
-                if importantDates.isEmpty {
+                if visibleDates.isEmpty {
                     EmptyDatesView(
                         onAddDate: { isPresentingNewDate = true },
                         onImport: { isPresentingImport = true }
@@ -381,6 +388,7 @@ extension ImportantDate {
     /// localização — ver mesmo padrão/justificativa em `ImportantDateEntity.subtitleText`.
     var daysRemainingLabel: LocalizedStringResource {
         switch daysUntilNextOccurrence() {
+        case ..<0: return "Passou"
         case 0: return "Hoje"
         case 1: return "Amanhã"
         case let days: return "Faltam \(days) dias"
