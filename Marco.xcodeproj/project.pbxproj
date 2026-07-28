@@ -111,7 +111,7 @@
 		7A1C0E4B9D2F45A6B8C3D1E0 /* Exceptions for "Marco" folder in "MarcoWatch" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Memento.icon,
+				Marco.icon,
 			);
 			target = 773F5A95A0236383AEDD1BF5 /* MarcoWatch */;
 		};
@@ -609,7 +609,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MarcoWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MarcoWidgets;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -641,7 +641,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MarcoWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MarcoWidgets;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -689,7 +689,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 26.4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -817,7 +817,7 @@
 		A04598943009744000EFFE38 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Memento;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Marco;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Marco/Marco.entitlements;
@@ -826,6 +826,7 @@
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "O Marco usa seu Calendário para sugerir datas a importar.";
 				INFOPLIST_KEY_NSContactsUsageDescription = "O Marco usa seus contatos para sugerir aniversários a importar.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -854,7 +855,7 @@
 		A04598953009744000EFFE38 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Memento;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Marco;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = Marco/Marco.entitlements;
@@ -863,6 +864,7 @@
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "O Marco usa seu Calendário para sugerir datas a importar.";
 				INFOPLIST_KEY_NSContactsUsageDescription = "O Marco usa seus contatos para sugerir aniversários a importar.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -896,7 +898,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.MarcoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -918,7 +920,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.MarcoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -939,6 +941,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.MarcoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -959,6 +962,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Eduardo.MarcoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -999,14 +1003,14 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 26.4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
 		C53869CFEB6AA77957B501C1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Memento;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Marco;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MarcoWatch/MarcoWatch.entitlements;
@@ -1014,7 +1018,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Memento;
+				INFOPLIST_KEY_CFBundleDisplayName = Marco;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = Eduardo.Marco;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1040,7 +1044,7 @@
 		EF7573F7487EB968DF600D30 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Memento;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Marco;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MarcoWatch/MarcoWatch.entitlements;
@@ -1048,7 +1052,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = J63SH8A52R;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Memento;
+				INFOPLIST_KEY_CFBundleDisplayName = Marco;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = Eduardo.Marco;
 				LD_RUNPATH_SEARCH_PATHS = (
