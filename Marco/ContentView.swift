@@ -11,13 +11,14 @@ import SwiftData
 struct ContentView: View {
     var body: some View {
         TabView {
-            Tab("Datas", systemImage: "list.bullet") {
+            Tab("Datas", systemImage: "calendar.badge") {
                 ImportantDateListView()
             }
             Tab("Buscar", systemImage: "magnifyingglass", role: .search) {
                 SearchDatesView()
             }
         }
+        .tint(Color("MarcosGreen"))
     }
 }
 

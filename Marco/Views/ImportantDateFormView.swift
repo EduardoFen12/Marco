@@ -314,13 +314,7 @@ struct ImportantDateFormView: View {
                     }
                 }
             }
-            .pickerStyle(.menu)
-            .tint(Color("MarcoDarkGreen"))
-            .fixedSize()
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color("MarcoMint"))
-            .clipShape(Capsule())
+            .marcoFieldPill()
             .onChange(of: birthdayMonth) {
                 let validDays = Self.daysInBirthdayMonth(birthdayMonth)
                 if !validDays.contains(birthdayDay) {
@@ -366,14 +360,7 @@ struct ImportantDateFormView: View {
                         Text(type.displayName).tag(type)
                     }
                 }
-                .labelsHidden()
-                .pickerStyle(.menu)
-                .fixedSize()
-                .tint(Color("MarcoDarkGreen"))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color("MarcoMint"))
-                .clipShape(Capsule())
+                .marcoFieldPill()
             }
         }
     }
@@ -392,14 +379,7 @@ struct ImportantDateFormView: View {
                         Text(option.displayName).tag(Relationship?.some(option))
                     }
                 }
-                .labelsHidden()
-                .pickerStyle(.menu)
-                .fixedSize()
-                .tint(Color("MarcoDarkGreen"))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color("MarcoMint"))
-                .clipShape(Capsule())
+                .marcoFieldPill()
             }
         }
     }
@@ -517,6 +497,30 @@ private struct FieldIconLabel: View {
 /// `.foregroundStyle` mudam essa cor (testado lado a lado no simulador; sem efeito observável).
 /// Só o fundo por trás é estilizável, por isso a pill fica `MarcoMint`/texto preto em vez do
 /// texto `MarcoDarkGreen` do mock — o mais próximo possível sem recriar o seletor.
+/// Pill mint dos `Picker` em menu ("Tipo", "Relação", mês/dia), pareada com a do
+/// `PillDatePicker` para os campos do form ficarem idênticos.
+///
+/// O chip nativo do `DatePicker` `.compact` desenha um `tertiarySystemFill` próprio por cima do
+/// que estiver atrás dele (medido em runtime: a mint sai de `81,233,214` para `90,205,193`) e
+/// pinta o valor com a cor de label do sistema — nada disso é estilizável. Então é a pill do
+/// menu que copia o `DatePicker`, não o contrário: mesmo fill por cima da mint, mesma cor de
+/// texto (`.primary`), e sem padding vertical porque os dois controles já têm a mesma altura
+/// intrínseca (~34pt) — foi o padding de 6 que deixava a pill do menu mais alta que a de data.
+private extension View {
+    func marcoFieldPill() -> some View {
+        labelsHidden()
+            .pickerStyle(.menu)
+            .fixedSize()
+            .tint(.primary)
+            .padding(.horizontal, 12)
+            .background {
+                Color("MarcoMint")
+                    .overlay(Color(uiColor: .tertiarySystemFill))
+            }
+            .clipShape(Capsule())
+    }
+}
+
 private struct PillDatePicker: View {
     let title: LocalizedStringResource
     @Binding var selection: Date
@@ -527,8 +531,6 @@ private struct PillDatePicker: View {
             .labelsHidden()
             .datePickerStyle(.compact)
             .tint(Color("MarcoDarkGreen"))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 2)
             .background(Color("MarcoMint"))
             .clipShape(Capsule())
     }
