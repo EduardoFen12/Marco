@@ -52,7 +52,14 @@
       }
     },
     "DIAS" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DAYS"
+          }
+        }
+      }
     },
     "É hoje!" : {
       "localizations" : {

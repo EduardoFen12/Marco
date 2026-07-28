@@ -124,7 +124,14 @@
       }
     },
     "Adicionar Marco" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Date"
+          }
+        }
+      }
     },
     "Adicionei %@." : {
       "localizations" : {
@@ -257,7 +264,14 @@
       }
     },
     "Categoria" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        }
+      }
     },
     "Colega" : {
       "localizations" : {
@@ -280,7 +294,14 @@
       }
     },
     "Compromisso" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment"
+          }
+        }
+      }
     },
     "Cônjuge/Parceiro(a)" : {
       "localizations" : {
@@ -363,7 +384,14 @@
       }
     },
     "Desmarcar todos" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deselect All"
+          }
+        }
+      }
     },
     "DESTAQUE" : {
       "localizations" : {
@@ -386,7 +414,14 @@
       }
     },
     "DIAS" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DAYS"
+          }
+        }
+      }
     },
     "Digite o nome de uma data para buscar." : {
       "localizations" : {
@@ -449,7 +484,14 @@
       }
     },
     "Evento anual" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annual event"
+          }
+        }
+      }
     },
     "Excluir" : {
       "localizations" : {
@@ -522,7 +564,14 @@
       }
     },
     "GERAR\nMENSAGEM" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GENERATE\nMESSAGE"
+          }
+        }
+      }
     },
     "Gerar mensagem" : {
       "extractionState" : "stale",
@@ -566,7 +615,14 @@
       }
     },
     "Identificação" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        }
+      }
     },
     "Importar" : {
       "localizations" : {
@@ -650,7 +706,14 @@
       }
     },
     "Mensagem sugerida" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested message"
+          }
+        }
+      }
     },
     "Mês" : {
       "localizations" : {
@@ -774,7 +837,14 @@
       }
     },
     "NOVO REGISTRO" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEW ENTRY"
+          }
+        }
+      }
     },
     "Outro" : {
       "localizations" : {
@@ -787,7 +857,14 @@
       }
     },
     "Passou" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past"
+          }
+        }
+      }
     },
     "Qual o nome da data?" : {
       "localizations" : {
@@ -800,7 +877,14 @@
       }
     },
     "Quando" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When"
+          }
+        }
+      }
     },
     "Quando é a data?" : {
       "localizations" : {
@@ -853,7 +937,14 @@
       }
     },
     "Relação" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relationship"
+          }
+        }
+      }
     },
     "Relacionamento" : {
       "localizations" : {
@@ -876,10 +967,24 @@
       }
     },
     "Selecionar todos" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select All"
+          }
+        }
+      }
     },
     "SUGERIR\nPRESENTE" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SUGGEST\nGIFT"
+          }
+        }
+      }
     },
     "Sugerir presente" : {
       "extractionState" : "stale",
@@ -893,7 +998,14 @@
       }
     },
     "Sugestão de presente" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gift suggestion"
+          }
+        }
+      }
     },
     "Sugestões de IA" : {
       "localizations" : {
@@ -936,7 +1048,14 @@
       }
     },
     "Toque em + para adicionar uma data importante" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap + to add an important date"
+          }
+        }
+      }
     },
     "Toque em + para adicionar uma data importante." : {
       "extractionState" : "stale",
@@ -980,7 +1099,14 @@
       }
     },
     "Voltar" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

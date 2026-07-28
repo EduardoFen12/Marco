@@ -41,7 +41,14 @@
       }
     },
     "Compromisso" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appointment"
+          }
+        }
+      }
     },
     "Contagem regressiva para a próxima data importante." : {
       "localizations" : {
@@ -65,7 +72,14 @@
       }
     },
     "DIAS" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DAYS"
+          }
+        }
+      }
     },
     "É hoje!" : {
       "localizations" : {

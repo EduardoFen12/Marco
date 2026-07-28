@@ -32,7 +32,14 @@
       }
     },
     "DIAS" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DAYS"
+          }
+        }
+      }
     },
     "Faltam %lld dias" : {
       "localizations" : {
