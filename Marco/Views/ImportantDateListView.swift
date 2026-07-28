@@ -123,13 +123,8 @@ struct ImportantDateListView: View {
                             Label("Importar…", systemImage: "square.and.arrow.down")
                         }
                     } label: {
-                        Image(systemName: "plus")
-                            .foregroundStyle(.white)
+                        Label("Adicionar", systemImage: "plus")
                     }
-                    .menuStyle(.button)
-                    .buttonStyle(.glassProminent)
-                    .tint(Color("MarcosGreen"))
-                    .accessibilityLabel(Text("Adicionar"))
                 }
             }
             .sheet(isPresented: $isPresentingNewDate) {
