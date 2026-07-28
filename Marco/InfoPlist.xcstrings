@@ -8,7 +8,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Marco"
+            "value" : "Markstone"
           }
         }
       }
@@ -31,13 +31,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marco uses your Calendar to suggest dates to import."
+            "value" : "Markstone uses your Calendar to suggest dates to import."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Marco usa seu Calendário para sugerir datas a importar."
+            "value" : "O Markstone usa seu Calendário para sugerir datas a importar."
           }
         }
       }
@@ -48,13 +48,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marco uses your contacts to suggest birthdays to import."
+            "value" : "Markstone uses your contacts to suggest birthdays to import."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Marco usa seus contatos para sugerir aniversários a importar."
+            "value" : "O Markstone usa seus contatos para sugerir aniversários a importar."
           }
         }
       }

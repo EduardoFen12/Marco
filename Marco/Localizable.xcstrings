@@ -123,7 +123,7 @@
         }
       }
     },
-    "Adicionar Marco" : {
+    "Adicionar data" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -685,12 +685,12 @@
         }
       }
     },
-    "Marco" : {
+    "Markstone" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marco"
+            "value" : "Markstone"
           }
         }
       }

@@ -107,7 +107,7 @@ struct ImportantDateListView: View {
                     ImportantDateDetailView(importantDate: importantDate)
                 }
             }
-            .navigationTitle("Marco")
+            .navigationTitle("Markstone")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -206,7 +206,7 @@ private struct EmptyDatesView: View {
             }
         } actions: {
             VStack(spacing: 12) {
-                Button("Adicionar Marco", action: onAddDate)
+                Button("Adicionar data", action: onAddDate)
                     .buttonStyle(.borderedProminent)
                     .tint(Color("MarcosGreen"))
 

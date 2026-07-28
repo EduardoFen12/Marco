@@ -1,6 +1,8 @@
-# Marco
+# Markstone
 
 App iOS de datas importantes (aniversários, comemorativas, memoriais) com notificações em camadas, App Intents/Siri e sugestões de IA on-device via Foundation Models. Projeto de aprendizado de App Intents, Shortcuts e Foundation Models framework.
+
+⚠️ **O produto se chama "Markstone"; o código continua "Marco".** O nome "Marco" já existia na App Store, então a marca virou "Markstone" (ficha da loja: "Markstone: Dates & Reminders"). Só o que o usuário vê mudou — `CFBundleDisplayName`, título da tela, usage descriptions e docs. **Nada de identificador técnico foi renomeado**: bundle ID `Eduardo.Marco`, App Groups `group.Eduardo.Marco`/`.watch`, `Marco.sqlite`, targets, schemes, diretórios, `Marco.xcodeproj`, color sets `Marco*` e `Marco.icon` seguem como estão — trocar bundle ID ou App Group renomeia o container e apaga os dados do app instalado. Ao ler "Marco" no repo, presuma identificador, não marca.
 
 **`SPEC.md` é a fonte da verdade** — requisitos, modelo de dados, decisões técnicas e a lista de tasks (seção 6). Leia-a antes de qualquer trabalho.
 

@@ -90,7 +90,7 @@ private struct WatchEmptyDatesView: View {
             Text("Nenhuma data")
                 .font(.headline)
                 .foregroundStyle(Color("MarcoLabel"))
-            Text("Abra o Marco no iPhone para sincronizar.")
+            Text("Abra o Markstone no iPhone para sincronizar.")
                 .font(.caption2)
                 .foregroundStyle(Color("MarcoLabelSecondary"))
                 .multilineTextAlignment(.center)
