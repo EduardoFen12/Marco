@@ -150,6 +150,7 @@ struct ImportantDateFormView: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
+                    .tint(.secondary)
                 }
             }
             ToolbarItem(placement: .confirmationAction) {
