@@ -1,6 +1,6 @@
 {
   "fill" : {
-    "automatic-gradient" : "srgb:0.91373,0.88627,0.83529,1.00000"
+    "automatic-gradient" : "srgb:1.00000,1.00000,1.00000,1.00000"
   },
   "groups" : [
     {
@@ -9,7 +9,7 @@
           "image-name" : "MarcosLogo.png",
           "name" : "MarcosLogo",
           "position" : {
-            "scale" : 0.8,
+            "scale" : 0.7,
             "translation-in-points" : [
               -0.4,
               63.2
@@ -20,7 +20,7 @@
           "image-name" : "MarcosRing.png",
           "name" : "MarcosRing",
           "position" : {
-            "scale" : 0.67,
+            "scale" : 0.57,
             "translation-in-points" : [
               0,
               0
