@@ -22,6 +22,7 @@ struct ImportantDateDetailView: View {
 
     let importantDate: ImportantDate
 
+    @State private var isEditing = false
     @State private var isSuggestingGift = false
     @State private var giftResult: Result<GiftSuggestion, AISuggestionError>?
     @State private var isGeneratingMessage = false
@@ -84,20 +85,24 @@ struct ImportantDateDetailView: View {
                 .accessibilityLabel(Text("Voltar"))
             }
             ToolbarItem(placement: .confirmationAction) {
-                NavigationLink {
-                    ImportantDateFormView(importantDate: importantDate)
+                Button {
+                    isEditing = true
                 } label: {
                     Image(systemName: "pencil")
                         .fontWeight(.semibold)
-                        .foregroundStyle(.marcosGreen)
+                        .foregroundStyle(.white)
                 }
-                .accentColor(.marcosGreen)
+                .buttonStyle(.glassProminent)
+                .tint(Color("MarcosGreen"))
                 .accessibilityLabel(Text("Editar"))
             }
         }
         // Empurrada a partir da Home (T36, mock Figma): esconde a tab bar, já que esta tela
         // não faz parte da navegação por abas.
         .toolbar(.hidden, for: .tabBar)
+        .navigationDestination(isPresented: $isEditing) {
+            ImportantDateFormView(importantDate: importantDate)
+        }
     }
 
     private var header: some View {

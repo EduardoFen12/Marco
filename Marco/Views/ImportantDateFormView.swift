@@ -145,7 +145,11 @@ struct ImportantDateFormView: View {
         .toolbar {
             if importantDate == nil {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
                 }
             }
             ToolbarItem(placement: .confirmationAction) {
@@ -153,8 +157,10 @@ struct ImportantDateFormView: View {
                     save()
                 } label: {
                     Image(systemName: "checkmark")
-                        .foregroundStyle(.marcosGreen)
+                        .foregroundStyle(.white)
                 }
+                .buttonStyle(.glassProminent)
+                .tint(Color("MarcosGreen"))
                 .disabled(!isNameValid)
                 .accessibilityLabel(Text("Salvar"))
             }

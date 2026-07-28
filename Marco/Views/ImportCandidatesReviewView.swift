@@ -38,6 +38,9 @@ struct ImportCandidatesReviewView: View {
                     )
                 } else {
                     List {
+                        Section {
+                            selectAllRow
+                        }
                         ForEach(groupedBySource, id: \.source) { group in
                             Section(group.source.displayName) {
                                 ForEach(group.candidates) { candidate in
@@ -52,18 +55,22 @@ struct ImportCandidatesReviewView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
-                }
-                if !isLoading && !newCandidates.isEmpty {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button(allEligibleSelected ? "Desmarcar todos" : "Selecionar todos") {
-                            toggleSelectAll()
-                        }
+                    Button(role: .close) {
+                        dismiss()
                     }
+                    .tint(.secondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Importar") { importSelected() }
-                        .disabled(isLoading || selectedIDs.isEmpty)
+                    Button {
+                        importSelected()
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .tint(Color("MarcosGreen"))
+                    .disabled(isLoading || selectedIDs.isEmpty)
+                    .accessibilityLabel(Text("Importar"))
                 }
             }
             .task {
@@ -77,8 +84,7 @@ struct ImportCandidatesReviewView: View {
             toggle(candidate)
         } label: {
             HStack {
-                Image(systemName: selectedIDs.contains(candidate.id) ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(selectedIDs.contains(candidate.id) ? Color.accentColor : Color.secondary)
+                checkCircle(isOn: selectedIDs.contains(candidate.id))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(candidate.name)
                     dateLabel(for: candidate)
@@ -88,6 +94,23 @@ struct ImportCandidatesReviewView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    private var selectAllRow: some View {
+        Button {
+            toggleSelectAll()
+        } label: {
+            HStack {
+                checkCircle(isOn: allEligibleSelected)
+                Text("Selecionar todos")
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func checkCircle(isOn: Bool) -> some View {
+        Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
+            .foregroundStyle(isOn ? Color.accentColor : Color.secondary)
     }
 
     /// `Text` (não `String`/`LocalizedStringResource`) construído diretamente na chamada — só
