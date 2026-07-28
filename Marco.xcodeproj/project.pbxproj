@@ -108,6 +108,13 @@
 			);
 			target = FAD74E70F041587EDF61C815 /* MarcoWatchWidgets */;
 		};
+		7A1C0E4B9D2F45A6B8C3D1E0 /* Exceptions for "Marco" folder in "MarcoWatch" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Memento.icon,
+			);
+			target = 773F5A95A0236383AEDD1BF5 /* MarcoWatch */;
+		};
 		928DEE2F0BE9FDDFBABC5C2F /* Exceptions for "MarcoWidgets" folder in "MarcoWidgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -125,6 +132,9 @@
 		};
 		A04598743009743E00EFFE38 /* Marco */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7A1C0E4B9D2F45A6B8C3D1E0 /* Exceptions for "Marco" folder in "MarcoWatch" target */,
+			);
 			path = Marco;
 			sourceTree = "<group>";
 		};
@@ -996,7 +1006,7 @@
 		C53869CFEB6AA77957B501C1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Memento;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MarcoWatch/MarcoWatch.entitlements;
@@ -1030,7 +1040,7 @@
 		EF7573F7487EB968DF600D30 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Memento;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MarcoWatch/MarcoWatch.entitlements;
