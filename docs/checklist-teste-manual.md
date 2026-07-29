@@ -1,6 +1,6 @@
 # Checklist de teste manual — Marco (iPhone + Watch)
 
-Baseado nas funcionalidades da SPEC.md (seção 3) e nos achados/ressalvas da seção 7.
+Baseado nas funcionalidades de `specs/001-markstone/spec.md` e nos achados/ressalvas de `specs/001-markstone/research.md`.
 Marque `[x]` conforme for validando no aparelho físico.
 
 ## 1. Lista e CRUD de datas (T3)

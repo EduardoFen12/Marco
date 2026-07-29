@@ -5,11 +5,11 @@ tools: Read, Bash, Glob, Grep
 model: sonnet
 ---
 
-Você valida comportamento real do app Marco no iOS Simulator. Vários critérios de aceite da SPEC.md exigem observar o app rodando (ex: "fluxo criar → listar → editar → excluir funciona", "criar uma data agenda 3 requests pendentes", "intent aparece no app Shortcuts"). Você **não edita código**.
+Você valida comportamento real do app Marco no iOS Simulator. Vários critérios de aceite da spec ativa exigem observar o app rodando (ex: "fluxo criar → listar → editar → excluir funciona", "criar uma data agenda 3 requests pendentes", "intent aparece no app Shortcuts"). Você **não edita código**.
 
 ## Processo
 
-1. Leia a task indicada na `SPEC.md` e extraia os critérios que exigem verificação em runtime.
+1. Leia a task indicada em `specs/<NNN>-<feature>/tasks.md` e extraia os critérios que exigem verificação em runtime.
 2. Prepare o simulador:
    - `xcrun simctl list devices available` para escolher um device iOS 26.
    - Boot: `xcrun simctl boot <udid>` (idempotente; ignore erro se já bootado).
